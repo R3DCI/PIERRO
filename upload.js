@@ -1,50 +1,74 @@
 export default {
   async fetch(request, env) {
-    // Autoriser uniquement POST
-    if (request.method !== "POST") {
-      return new Response("Méthode non autorisée", { status: 405 });
-    }
 
-    try {
-      // Récupère le FormData envoyé depuis ton site
-      const formData = await request.formData();
-      const file = formData.get("file");
-      const year = formData.get("year");
-      const name = formData.get("name") || "";
-      const message = formData.get("message") || "";
+    // ============ UPLOAD (POST) ============
+    if (request.method === "POST") {
+      try {
+        const formData = await request.formData();
+        const file = formData.get("file");
+        const year = formData.get("year");
+        const name = formData.get("name") || "";
+        const message = formData.get("message") || "";
 
-      if (!file || !year) {
-        return new Response("Fichier ou année manquants", { status: 400 });
-      }
+        if (!file || !year) {
+          return new Response("Fichier ou année manquants", { status: 400 });
+        }
 
-      // Générer un nom unique
-      const extension = file.name.split(".").pop();
-      const key = `${Date.now()}.${extension}`;
+        // Dossier par année
+        const extension = file.name.split(".").pop();
+        const key = `${year}/${Date.now()}.${extension}`;
 
-      // Upload vers R2
-      await env.BUCKET.put(key, file.stream(), {
-        httpMetadata: { contentType: file.type }
-      });
+        // Upload vers R2
+        await env.BUCKET.put(key, file.stream(), {
+          httpMetadata: { contentType: file.type }
+        });
 
-      // URL publique R2
-      const publicUrl = `https://pub-${env.BUCKET.id}.r2.dev/${key}`;
+        // URL publique
+        const publicUrl = `https://${env.BUCKET.id}.r2.dev/${key}`;
 
-      // Réponse JSON
-      return new Response(
-        JSON.stringify({
+        return Response.json({
+          success: true,
           url: publicUrl,
           year,
           name,
           message,
-          type: file.type.startsWith("video") ? "video" : "image"
-        }),
-        {
-          headers: { "Content-Type": "application/json" }
-        }
-      );
+          type: file.type.startsWith("video") ? "video" : "image",
+          file: key
+        });
 
-    } catch (err) {
-      return new Response("Erreur serveur : " + err.toString(), { status: 500 });
+      } catch (err) {
+        return new Response("Erreur serveur : " + err, { status: 500 });
+      }
     }
+
+    // ============ LISTER TOUTES LES ANNÉES ============
+    if (request.method === "GET") {
+      const url = new URL(request.url);
+      const year = url.searchParams.get("year");
+
+      // Aucune année → renvoie la liste des dossiers (années)
+      if (!year) {
+        const list = await env.BUCKET.list({ delimiter: "/" });
+
+        return Response.json({
+          years: list.delimitedPrefixes.map(p => p.replace("/", ""))
+        });
+      }
+
+      // ============ LISTER LES FICHIERS D’UNE ANNÉE ============
+      const objects = await env.BUCKET.list({
+        prefix: `${year}/`
+      });
+
+      const files = objects.objects.map(obj => ({
+        file: obj.key,
+        url: `https://${env.BUCKET.id}.r2.dev/${obj.key}`,
+        type: obj.key.toLowerCase().endsWith(".mp4") ? "video" : "image"
+      }));
+
+      return Response.json({ year, files });
+    }
+
+    return new Response("Méthode non autorisée", { status: 405 });
   }
 };
