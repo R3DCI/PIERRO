@@ -39,16 +39,18 @@
     }
 
     /* ---------- TIMELINE DES ANNÉES ---------- */
-    #years-menu {
-        display: flex;
-        justify-content: center;
-        gap: 16px;
-        margin: 16px auto 28px !important;
-        padding: 10px 0;
-        flex-wrap: wrap;
-        font-size: 1.25rem;
-        width: 100%;
-    }
+   #years-menu {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin: 40px auto 28px !important; /* <-- plus d’espace au-dessus */
+    padding: 10px 0;
+    flex-wrap: wrap;
+    font-size: 1.25rem;
+    width: 100%;
+    position: relative;
+    z-index: 10; /* <-- garantit que la timeline passe devant la vidéo */
+}
 
     .year-btn {
         cursor: pointer;
