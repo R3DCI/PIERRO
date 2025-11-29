@@ -267,6 +267,7 @@ async function uploadFiles() {
     if (!files.length) return alert("Choisis un fichier !");
 
     for (const file of files) {
+
         const form = new FormData();
         form.append("file", file);
         form.append("year", year);
@@ -282,6 +283,10 @@ async function uploadFiles() {
             alert("Erreur lors de l'envoi");
             return;
         }
+
+        // <<< FIX CRUCIAL : lire la réponse JSON
+        const data = await res.json();
+        console.log("UPLOAD OK :", data);
     }
 
     closePopup();
@@ -313,8 +318,10 @@ async function loadGallery(selected = null) {
     const gallery = document.getElementById("gallery");
     gallery.innerHTML = "";
 
-    const res = await fetch(`${WORKER_URL}?year=` + year);
+    const res = await fetch(`${WORKER_URL}?year=${year}`);
     const data = await res.json();
+
+    console.log("Gallery data:", data);
 
     data.files.forEach(item => {
         const div = document.createElement("div");
