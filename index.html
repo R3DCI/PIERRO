@@ -127,12 +127,6 @@
 
     .item img, .item video { width: 100%; display: block; }
 
-    .item .info {
-        padding: 10px;
-        font-size: .9rem;
-        opacity: .85;
-    }
-
     /* ---------- BOUTON + ---------- */
     #upload-btn {
         position: fixed;
@@ -219,7 +213,7 @@
 
 <!-- VIDEO PRINCIPALE -->
 <video class="main-video" controls>
-    <source src="TON_MONTAGE.mp4" type="video/mp4" />
+    <source src="" type="video/mp4" />
 </video>
 
 <!-- GALERIE -->
@@ -254,6 +248,7 @@
 
 <script>
 const WORKER_URL = "https://pierro-sign.salehredapf.workers.dev";
+const R2_PUBLIC_URL = "https://pub-2977f39c3cc746c3b28e60884b62b9a4.r2.dev";
 
 /* POPUP */
 function openPopup() { document.getElementById("popup").style.display = "flex"; }
@@ -267,7 +262,6 @@ async function uploadFiles() {
     if (!files.length) return alert("Choisis un fichier !");
 
     for (const file of files) {
-
         const form = new FormData();
         form.append("file", file);
         form.append("year", year);
@@ -284,7 +278,6 @@ async function uploadFiles() {
             return;
         }
 
-        // <<< FIX CRUCIAL : lire la réponse JSON
         const data = await res.json();
         console.log("UPLOAD OK :", data);
     }
@@ -310,30 +303,27 @@ function renderYearMenu(active) {
 }
 
 async function loadGallery(selected = null) {
-    const latest = Math.max(...fixedYears);
-    const year = selected || latest;
-
+    const year = selected || Math.max(...fixedYears);
     renderYearMenu(year);
 
     const gallery = document.getElementById("gallery");
     gallery.innerHTML = "";
 
-    // ---- CHARGER VIDEO PRINCIPALE ----
+    /* ----- VIDEO PRINCIPALE ----- */
     const mainVideo = document.querySelector(".main-video source");
-    const testVideoUrl = `${R2_PUBLIC_URL}/main/${year}.mp4`;
+    const mainUrl = `${R2_PUBLIC_URL}/main/${year}.mp4`;
 
-    // on teste si la vidéo existe réellement
-    const headCheck = await fetch(testVideoUrl, { method: "HEAD" });
+    const headCheck = await fetch(mainUrl, { method: "HEAD" });
 
     if (headCheck.ok) {
-        mainVideo.src = testVideoUrl;
+        mainVideo.src = mainUrl;
     } else {
-        mainVideo.src = ""; // ou une image placeholder
+        mainVideo.src = "";
     }
 
     document.querySelector(".main-video").load();
 
-    // ---- CHARGER LES SOUVENIRS par année ----
+    /* ----- GALERIE ----- */
     const res = await fetch(`${WORKER_URL}?year=` + year);
     const data = await res.json();
 
