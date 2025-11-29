@@ -182,30 +182,6 @@
         from { transform: scale(.9); opacity: 0; }
         to   { transform: scale(1); opacity: 1; }
     }
-
-    input, textarea, select {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #c9b8a8;
-        border-radius: 10px;
-        margin-top: 12px;
-        font-size: 1rem;
-        font-family: 'Playfair Display', serif;
-        background: #FAF8F4;
-        color: #4A3F35;
-    }
-
-    #send-btn {
-        margin-top: 20px;
-        width: 100%;
-        padding: 14px;
-        background: #4A3F35;
-        color: white;
-        border: none;
-        border-radius: 10px;
-        font-size: 1.25rem;
-        cursor: pointer;
-    }
 </style>
 </head>
 
@@ -252,6 +228,7 @@
     </div>
 </div>
 
+
 <!-- SUPABASE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -262,31 +239,52 @@ const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
+
 /* POPUP */
 function openPopup() { document.getElementById("popup").style.display = "flex"; }
 function closePopup() { document.getElementById("popup").style.display = "none"; }
 
-/* UPLOAD */
+
+/* --------------------------------------
+   UPLOAD — Cloudflare R2 + Supabase
+-------------------------------------- */
 async function uploadFiles() {
     const year = document.getElementById("yearInput").value;
     if (!year) return alert("Merci de choisir une année.");
+
     const files = document.getElementById("fileInput").files;
     if (!files.length) return alert("Choisis un fichier !");
 
+    const name = document.getElementById("nameInput").value;
+    const message = document.getElementById("messageInput").value;
+
     for (const file of files) {
-        const path = Date.now() + "_" + file.name;
 
-        const { error } = await client.storage.from("souvenirs").upload(path, file);
-        if (error) { alert("Erreur upload Supabase"); return; }
+        /* 1) ENVOI R2 VIA WORKER */
+        const form = new FormData();
+        form.append("file", file);
+        form.append("year", year);
+        form.append("name", name);
+        form.append("message", message);
 
-        const url = `${SUPABASE_URL}/storage/v1/object/public/souvenirs/${path}`;
+        const r2 = await fetch("https://pierro-sign.salehredapf.workers.dev", {
+            method: "POST",
+            body: form,
+        });
 
+        const result = await r2.json();
+        if (result.error) {
+            alert("Erreur R2 : " + result.error);
+            return;
+        }
+
+        /* 2) SAUVEGARDE SUPABASE (données seulement) */
         await client.from("souvenirs").insert({
-            url,
-            type: file.type.startsWith("video") ? "video" : "image",
-            name: document.getElementById("nameInput").value,
-            message: document.getElementById("messageInput").value,
-            year
+            url: result.url,
+            type: result.type,
+            name: result.name,
+            message: result.message,
+            year: result.year,
         });
     }
 
@@ -294,7 +292,10 @@ async function uploadFiles() {
     loadGallery();
 }
 
-/* TIMELINE ET GALERIE */
+
+/* --------------------------------------
+   TIMELINE ET GALERIE
+-------------------------------------- */
 const fixedYears = [2020,2021,2022,2023,2024,2025];
 
 function renderYearMenu(active) {
