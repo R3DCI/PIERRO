@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pour lui</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        margin: 0;
+        font-family: 'Playfair Display', serif;
+        background: #FAF8F4;
+        color: #4A3F35;
+        text-align: center;
+    }
+
+    h1 {
+        margin: 28px 0 4px;
+        font-size: 2.6rem;
+        font-weight: 700;
+    }
+
+    .subtitle {
+        opacity: 0.7;
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+    }
+
+    .main-video {
+        width: 90%;
+        max-width: 600px;
+        border-radius: 12px;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.15);
+    }
+
+    .section-title {
+        text-align: left;
+        width: 90%;
+        margin: 40px auto 15px;
+        font-size: 1.8rem;
+        font-weight: 600;
+        border-left: 4px solid #4A3F35;
+        padding-left: 10px;
+    }
+
+    #gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px,1fr));
+        gap: 10px;
+        padding: 10px 20px 80px;
+    }
+
+    .item {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.09);
+        position: relative;
+    }
+
+    .item img, .item video {
+        width: 100%;
+        display: block;
+    }
+
+    .item .info {
+        padding: 8px;
+        font-size: 0.9rem;
+        opacity: 0.85;
+    }
+
+    /* Floating upload button */
+    #upload-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #4A3F35;
+        color: white;
+        border: none;
+        width: 65px;
+        height: 65px;
+        border-radius: 50%;
+        font-size: 2rem;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+        z-index: 1000;
+    }
+
+    /* Popup */
+    #popup {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+    }
+
+    #popup-box {
+        background: white;
+        width: 85%;
+        max-width: 390px;
+        padding: 25px;
+        border-radius: 14px;
+        text-align: left;
+        box-shadow: 0 8px 22px rgba(0,0,0,0.25);
+    }
+
+    input, textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #c9b8a8;
+        border-radius: 8px;
+        margin-top: 12px;
+        font-size: 1rem;
+        font-family: 'Playfair Display', serif;
+        background: #FAF8F4;
+        color: #4A3F35;
+    }
+
+    #send-btn {
+        margin-top: 18px;
+        width: 100%;
+        padding: 12px;
+        background: #4A3F35;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.2rem;
+        cursor: pointer;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>Pour lui</h1>
+<div class="subtitle">Souvenirs, images, vidéos… tout le monde peut ajouter.</div>
+
+<!-- MAIN VIDEO -->
+<video class="main-video" controls>
+    <source src="TON_MONTAGE.mp4" type="video/mp4">
+</video>
+
+<!-- GALLERY -->
+<div class="section-title">Souvenirs du groupe</div>
+<div id="gallery"></div>
+
+<!-- UPLOAD BUTTON -->
+<button id="upload-btn" onclick="openPopup()">+</button>
+
+<!-- POPUP -->
+<div id="popup">
+    <div id="popup-box">
+        <h2 style="margin-top:0;">Ajouter un souvenir</h2>
+        <input id="nameInput" placeholder="Prénom (optionnel)">
+        <textarea id="messageInput" rows="2" placeholder="Petit message (optionnel)"></textarea>
+        <input type="file" id="fileInput" accept="image/*,video/*" multiple>
+        <button id="send-btn" onclick="uploadFiles()">Envoyer</button>
+    </div>
+</div>
+
+<!-- FIREBASE + JS -->
+<script type="module">
+
+    /* ------------------ FIREBASE ------------------ */
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } 
+        from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+    import { 
+        getFirestore, collection, addDoc, getDocs, orderBy, query 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "A REMPLIR",
+        authDomain: "A REMPLIR",
+        projectId: "A REMPLIR",
+        storageBucket: "A REMPLIR",
+        messagingSenderId: "A REMPLIR",
+        appId: "A REMPLIR"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    /* ------------------ POPUP ------------------ */
+    function openPopup() {
+        document.getElementById("popup").style.display = "flex";
+    }
+    window.openPopup = openPopup;
+
+    function closePopup() {
+        document.getElementById("popup").style.display = "none";
+    }
+
+    /* ------------------ EXIF DATE READER ------------------ */
+    async function getExifDate(file) {
+        return new Promise(resolve => {
+            try {
+                const fr = new FileReader();
+                fr.onload = function(e) {
+                    const view = new DataView(e.target.result);
+                    if (view.getUint16(0, false) != 0xFFD8) return resolve(null);
+
+                    let offset = 2;
+                    while (offset < view.byteLength) {
+                        const marker = view.getUint16(offset, false);
+                        offset += 2;
+                        if (marker == 0xFFE1) {
+                            offset += 2;
+                            const exif = new TextDecoder().decode(
+                                new Uint8Array(e.target.result, offset + 20, 100)
+                            );
+                            const match = exif.match(/(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2}):(\d{2})/);
+                            return resolve(match ? match[0] : null);
+                        } else offset += view.getUint16(offset, false);
+                    }
+                    resolve(null);
+                };
+                fr.readAsArrayBuffer(file);
+            } catch {
+                resolve(null);
+            }
+        });
+    }
+
+    /* ------------------ UPLOAD ------------------ */
+    async function uploadFiles() {
+        const files = document.getElementById("fileInput").files;
+        const name = document.getElementById("nameInput").value.trim();
+        const msg = document.getElementById("messageInput").value.trim();
+
+        if (!files.length) return alert("Choisis un fichier !");
+
+        for (const file of files) {
+            const exifDate = file.type.startsWith("image") ? await getExifDate(file) : null;
+            const timestamp = exifDate ? new Date(exifDate).getTime() : Date.now();
+
+            const storageRef = ref(storage, "souvenirs/" + Date.now() + "_" + file.name);
+            await uploadBytes(storageRef, file);
+            const url = await getDownloadURL(storageRef);
+
+            await addDoc(collection(db, "souvenirs"), {
+                url,
+                type: file.type.startsWith("video") ? "video" : "image",
+                name,
+                message: msg,
+                date: timestamp
+            });
+        }
+
+        closePopup();
+        loadGallery();
+    }
+    window.uploadFiles = uploadFiles;
+
+    /* ------------------ LOAD GALLERY ------------------ */
+    async function loadGallery() {
+        const q2 = query(collection(db, "souvenirs"), orderBy("date", "asc"));
+        const snap = await getDocs(q2);
+
+        const gallery = document.getElementById("gallery");
+        gallery.innerHTML = "";
+
+        snap.forEach(doc => {
+            const d = doc.data();
+
+            const div = document.createElement("div");
+            div.className = "item";
+
+            if (d.type === "video") {
+                div.innerHTML = `<video src="${d.url}" controls></video>`;
+            } else {
+                div.innerHTML = `<img src="${d.url}" />`;
+            }
+
+            if (d.name || d.message) {
+                div.innerHTML += `
+                <div class="info">
+                    ${d.name ? `<strong>${d.name}</strong><br>` : ""}
+                    ${d.message ? `${d.message}` : ""}
+                </div>`;
+            }
+
+            gallery.appendChild(div);
+        });
+    }
+
+    loadGallery();
+
+</script>
+
+</body>
+</html>
