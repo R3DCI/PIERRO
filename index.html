@@ -318,10 +318,24 @@ async function loadGallery(selected = null) {
     const gallery = document.getElementById("gallery");
     gallery.innerHTML = "";
 
-    const res = await fetch(`${WORKER_URL}?year=${year}`);
-    const data = await res.json();
+    // ---- CHARGER VIDEO PRINCIPALE ----
+    const mainVideo = document.querySelector(".main-video source");
+    const testVideoUrl = `${R2_PUBLIC_URL}/main/${year}.mp4`;
 
-    console.log("Gallery data:", data);
+    // on teste si la vidéo existe réellement
+    const headCheck = await fetch(testVideoUrl, { method: "HEAD" });
+
+    if (headCheck.ok) {
+        mainVideo.src = testVideoUrl;
+    } else {
+        mainVideo.src = ""; // ou une image placeholder
+    }
+
+    document.querySelector(".main-video").load();
+
+    // ---- CHARGER LES SOUVENIRS par année ----
+    const res = await fetch(`${WORKER_URL}?year=` + year);
+    const data = await res.json();
 
     data.files.forEach(item => {
         const div = document.createElement("div");
