@@ -51,7 +51,6 @@
         cursor: pointer;
         opacity: .6;
         transition: .25s;
-        position: relative;
         padding: 4px 0;
     }
 
@@ -120,13 +119,13 @@
         to   { opacity: 1; transform: translateY(0); }
     }
 
-    .item:active {
-        transform: scale(.97);
-    }
-
     .item img, .item video {
         width: 100%;
         display: block;
+    }
+
+    .item:active {
+        transform: scale(.97);
     }
 
     .item .info {
@@ -234,7 +233,6 @@
         <input id="nameInput" placeholder="Prénom (optionnel)">
         <textarea id="messageInput" rows="2" placeholder="Petit message (optionnel)"></textarea>
 
-        <!-- CHAMP ANNÉE -->
         <select id="yearInput">
             <option value="" disabled selected>Choisir l'année</option>
             <option>2020</option>
@@ -250,27 +248,34 @@
     </div>
 </div>
 
-<!-- FIREBASE + JS -->
-<script type="module">
+<!-- SUPABASE SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-/* ---------- CONFIG FIREBASE À COLLER ICI LORSQUE TU ES PRÊT ---------- */
-const app = "(() => {})()";  // Placeholder simple
-/* --------------------------------------------------------------------- */
+<script>
+/* ===========================
+   SUPABASE INITIALISATION
+   =========================== */
 
-/* SIMULATION Firestore (temp) — remplacé quand on mettra Firebase */
-let fakeData = [];  // À supprimer quand on active Firebase
+const SUPABASE_URL = "https://ifrrgexnpbzqrxuexlcs.supabase.co";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmcnJnZXhucGJ6cXJ4dWV4bGNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzNjE1NDIsImV4cCI6MjA3OTkzNzU0Mn0.1VmTOezg6DYZs92E-V5NktPDYcLbcXp7kLQb1wXD5ZY";
 
-/* ---------- POPUP ---------- */
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+/* ===========================
+   POPUP
+   =========================== */
+
 function openPopup() {
     document.getElementById("popup").style.display = "flex";
 }
-window.openPopup = openPopup;
-
 function closePopup() {
     document.getElementById("popup").style.display = "none";
 }
 
-/* ---------- UPLOAD (version temporaire sans Firebase) ---------- */
+/* ===========================
+   UPLOAD SUPABASE
+   =========================== */
+
 async function uploadFiles() {
     const year = document.getElementById("yearInput").value;
     if (!year) return alert("Merci de choisir une année.");
@@ -278,22 +283,39 @@ async function uploadFiles() {
     const files = document.getElementById("fileInput").files;
     if (!files.length) return alert("Choisis un fichier !");
 
-    for (const f of files) {
-        fakeData.push({
-            year,
-            type: f.type.startsWith("video") ? "video" : "image",
-            url: URL.createObjectURL(f),
+    for (const file of files) {
+        const path = Date.now() + "_" + file.name;
+
+        // Upload dans Supabase Storage
+        const { data: uploaded, error: uploadError } =
+            await supabase.storage.from("souvenirs").upload(path, file);
+
+        if (uploadError) {
+            console.error(uploadError);
+            alert("Erreur upload Supabase");
+            return;
+        }
+
+        const fileUrl = `${SUPABASE_URL}/storage/v1/object/public/souvenirs/${path}`;
+
+        // Ajout SQL
+        await supabase.from("souvenirs").insert({
+            url: fileUrl,
+            type: file.type.startsWith("video") ? "video" : "image",
             name: document.getElementById("nameInput").value,
-            message: document.getElementById("messageInput").value
+            message: document.getElementById("messageInput").value,
+            year: year
         });
     }
 
     closePopup();
     loadGallery();
 }
-window.uploadFiles = uploadFiles;
 
-/* ---------- CHARGEMENT & FILTRE PAR ANNÉE ---------- */
+/* ===========================
+   GALERIE
+   =========================== */
+
 const fixedYears = [2020,2021,2022,2023,2024,2025];
 
 function renderYearMenu(activeYear) {
@@ -309,7 +331,7 @@ function renderYearMenu(activeYear) {
     });
 }
 
-function loadGallery(filterYear=null) {
+async function loadGallery(filterYear = null) {
     const latest = Math.max(...fixedYears);
     const yearToShow = filterYear || latest;
 
@@ -318,31 +340,38 @@ function loadGallery(filterYear=null) {
     const gallery = document.getElementById("gallery");
     gallery.innerHTML = "";
 
-    fakeData
-        .filter(x => Number(x.year) === yearToShow)
-        .forEach(x => {
-            const div = document.createElement("div");
-            div.className = "item";
+    const { data, error } = await supabase
+        .from("souvenirs")
+        .select("*")
+        .eq("year", yearToShow)
+        .order("created_at", { ascending: true });
 
-            div.innerHTML = x.type === "video"
-                ? `<video src="${x.url}" controls></video>`
-                : `<img src="${x.url}">`;
+    if (error) {
+        console.error(error);
+        return;
+    }
 
-            if (x.name || x.message) {
-                div.innerHTML += `
-                <div class="info">
-                    ${x.name ? `<strong>${x.name}</strong><br>` : ""}
-                    ${x.message || ""}
-                </div>`;
-            }
+    data.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "item";
 
-            gallery.appendChild(div);
-        });
+        div.innerHTML = item.type === "video"
+            ? `<video src="${item.url}" controls></video>`
+            : `<img src="${item.url}">`;
+
+        if (item.name || item.message) {
+            div.innerHTML += `
+            <div class="info">
+                ${item.name ? `<strong>${item.name}</strong><br>` : ""}
+                ${item.message || ""}
+            </div>`;
+        }
+
+        gallery.appendChild(div);
+    });
 }
 
-/* ---------- LANCEMENT ---------- */
 loadGallery();
-
 </script>
 
 </body>
