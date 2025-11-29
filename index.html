@@ -18,7 +18,7 @@
     }
 
     h1 {
-        margin: 28px 0 4px;
+        margin: 18px 0 4px !important;
         font-size: 2.6rem;
         font-weight: 700;
         text-shadow: 0 0 6px rgba(174,139,105,0.35);
@@ -32,8 +32,9 @@
 
     .subtitle {
         opacity: .75;
-        font-size: 1.15rem;
-        margin-bottom: 30px;
+        font-size: 1.05rem;
+        margin-bottom: 18px !important;
+        padding: 0 20px;
         animation: fadeDown 1s ease-out;
     }
 
@@ -41,15 +42,17 @@
     #years-menu {
         display: flex;
         justify-content: center;
-        gap: 14px;
-        margin: 22px 0 30px;
+        gap: 16px;
+        margin: 16px auto 28px !important;
+        padding: 10px 0;
         flex-wrap: wrap;
         font-size: 1.25rem;
+        width: 100%;
     }
 
     .year-btn {
         cursor: pointer;
-        opacity: .6;
+        opacity: .55;
         transition: .25s;
         padding: 4px 0;
     }
@@ -261,10 +264,7 @@ const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-/* ===========================
-   POPUP
-   =========================== */
-
+/* POPUP */
 function openPopup() {
     document.getElementById("popup").style.display = "flex";
 }
@@ -272,10 +272,7 @@ function closePopup() {
     document.getElementById("popup").style.display = "none";
 }
 
-/* ===========================
-   UPLOAD SUPABASE
-   =========================== */
-
+/* UPLOAD SUPABASE */
 async function uploadFiles() {
     const year = document.getElementById("yearInput").value;
     if (!year) return alert("Merci de choisir une année.");
@@ -286,8 +283,7 @@ async function uploadFiles() {
     for (const file of files) {
         const path = Date.now() + "_" + file.name;
 
-        // Upload dans Supabase Storage
-        const { data: uploaded, error: uploadError } =
+        const { error: uploadError } =
             await supabase.storage.from("souvenirs").upload(path, file);
 
         if (uploadError) {
@@ -298,7 +294,6 @@ async function uploadFiles() {
 
         const fileUrl = `${SUPABASE_URL}/storage/v1/object/public/souvenirs/${path}`;
 
-        // Ajout SQL
         await supabase.from("souvenirs").insert({
             url: fileUrl,
             type: file.type.startsWith("video") ? "video" : "image",
@@ -312,10 +307,7 @@ async function uploadFiles() {
     loadGallery();
 }
 
-/* ===========================
-   GALERIE
-   =========================== */
-
+/* TIMELINE + GALERIE */
 const fixedYears = [2020,2021,2022,2023,2024,2025];
 
 function renderYearMenu(activeYear) {
