@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Pour lui</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet" />
 
 <style>
     body {
@@ -38,19 +38,19 @@
         animation: fadeDown 1s ease-out;
     }
 
-    /* ---------- TIMELINE DES ANNÉES ---------- */
-   #years-menu {
-    display: flex;
-    justify-content: center;
-    gap: 16px;
-    margin: 40px auto 28px !important; /* <-- plus d’espace au-dessus */
-    padding: 10px 0;
-    flex-wrap: wrap;
-    font-size: 1.25rem;
-    width: 100%;
-    position: relative;
-    z-index: 10; /* <-- garantit que la timeline passe devant la vidéo */
-}
+    /* ---------- TIMELINE ---------- */
+    #years-menu {
+        display: flex;
+        justify-content: center;
+        gap: 18px;
+        margin: 34px auto 20px !important;
+        padding: 10px 0;
+        flex-wrap: wrap;
+        font-size: 1.3rem;
+        width: 100%;
+        position: relative;
+        z-index: 10;
+    }
 
     .year-btn {
         cursor: pointer;
@@ -59,13 +59,11 @@
         padding: 4px 0;
     }
 
-    .year-btn:hover {
-        opacity: 1;
-    }
+    .year-btn:hover { opacity: 1; }
 
     .year-btn.active {
         opacity: 1;
-        font-weight: 600;
+        font-weight: 700;
         color: #4A3F35;
     }
 
@@ -79,12 +77,14 @@
         border-radius: 2px;
     }
 
+    /* ---------- VIDEO ---------- */
     .main-video {
         width: 90%;
         max-width: 600px;
         border-radius: 14px;
         box-shadow: 0 5px 20px rgba(0,0,0,0.18);
-        animation: fadeIn 1s ease-out;
+        margin-top: 10px !important;
+        animation: fadeIn .9s ease-out;
     }
 
     @keyframes fadeIn {
@@ -92,6 +92,7 @@
         to   { opacity: 1; }
     }
 
+    /* ---------- GALLERIE ---------- */
     .section-title {
         text-align: left;
         width: 90%;
@@ -105,8 +106,8 @@
     #gallery {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(160px,1fr));
-        gap: 12px;
-        padding: 10px 20px 120px;
+        gap: 14px;
+        padding: 10px 20px 140px;
     }
 
     .item {
@@ -124,14 +125,7 @@
         to   { opacity: 1; transform: translateY(0); }
     }
 
-    .item img, .item video {
-        width: 100%;
-        display: block;
-    }
-
-    .item:active {
-        transform: scale(.97);
-    }
+    .item img, .item video { width: 100%; display: block; }
 
     .item .info {
         padding: 10px;
@@ -139,6 +133,7 @@
         opacity: .85;
     }
 
+    /* ---------- BOUTON + ---------- */
     #upload-btn {
         position: fixed;
         bottom: 22px;
@@ -162,6 +157,7 @@
         100% { transform: scale(1); }
     }
 
+    /* ---------- POPUP ---------- */
     #popup {
         display: none;
         position: fixed;
@@ -223,20 +219,23 @@
 
 <!-- VIDEO PRINCIPALE -->
 <video class="main-video" controls>
-    <source src="TON_MONTAGE.mp4" type="video/mp4">
+    <source src="TON_MONTAGE.mp4" type="video/mp4" />
 </video>
 
+<!-- GALERIE -->
 <div class="section-title">Souvenirs</div>
 <div id="gallery"></div>
 
+<!-- BOUTON AJOUT -->
 <button id="upload-btn" onclick="openPopup()">+</button>
 
 <!-- POPUP -->
 <div id="popup">
     <div id="popup-box">
         <h2 style="margin-top:0;">Ajouter un souvenir</h2>
-        <input id="nameInput" placeholder="Prénom (optionnel)">
-        <textarea id="messageInput" rows="2" placeholder="Petit message (optionnel)"></textarea>
+
+        <input id="nameInput" placeholder="Prénom (optionnel)" />
+        <textarea id="messageInput" placeholder="Petit message (optionnel)" rows="2"></textarea>
 
         <select id="yearInput">
             <option value="" disabled selected>Choisir l'année</option>
@@ -248,60 +247,46 @@
             <option>2025</option>
         </select>
 
-        <input type="file" id="fileInput" accept="image/*,video/*" multiple>
+        <input type="file" id="fileInput" accept="image/*,video/*" multiple />
         <button id="send-btn" onclick="uploadFiles()">Envoyer</button>
     </div>
 </div>
 
-<!-- SUPABASE SDK -->
+<!-- SUPABASE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-/* ===========================
-   SUPABASE INITIALISATION
-   =========================== */
-
+/* INITIALISATION SUPABASE */
 const SUPABASE_URL = "https://ifrrgexnpbzqrxuexlcs.supabase.co";
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmcnJnZXhucGJ6cXJ4dWV4bGNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzNjE1NDIsImV4cCI6MjA3OTkzNzU0Mn0.1VmTOezg6DYZs92E-V5NktPDYcLbcXp7kLQb1wXD5ZY";
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 /* POPUP */
-function openPopup() {
-    document.getElementById("popup").style.display = "flex";
-}
-function closePopup() {
-    document.getElementById("popup").style.display = "none";
-}
+function openPopup() { document.getElementById("popup").style.display = "flex"; }
+function closePopup() { document.getElementById("popup").style.display = "none"; }
 
-/* UPLOAD SUPABASE */
+/* UPLOAD */
 async function uploadFiles() {
     const year = document.getElementById("yearInput").value;
     if (!year) return alert("Merci de choisir une année.");
-
     const files = document.getElementById("fileInput").files;
     if (!files.length) return alert("Choisis un fichier !");
 
     for (const file of files) {
         const path = Date.now() + "_" + file.name;
 
-        const { error: uploadError } =
-            await supabase.storage.from("souvenirs").upload(path, file);
+        const { error } = await client.storage.from("souvenirs").upload(path, file);
+        if (error) { alert("Erreur upload Supabase"); return; }
 
-        if (uploadError) {
-            console.error(uploadError);
-            alert("Erreur upload Supabase");
-            return;
-        }
+        const url = `${SUPABASE_URL}/storage/v1/object/public/souvenirs/${path}`;
 
-        const fileUrl = `${SUPABASE_URL}/storage/v1/object/public/souvenirs/${path}`;
-
-        await supabase.from("souvenirs").insert({
-            url: fileUrl,
+        await client.from("souvenirs").insert({
+            url,
             type: file.type.startsWith("video") ? "video" : "image",
             name: document.getElementById("nameInput").value,
             message: document.getElementById("messageInput").value,
-            year: year
+            year
         });
     }
 
@@ -309,41 +294,36 @@ async function uploadFiles() {
     loadGallery();
 }
 
-/* TIMELINE + GALERIE */
+/* TIMELINE ET GALERIE */
 const fixedYears = [2020,2021,2022,2023,2024,2025];
 
-function renderYearMenu(activeYear) {
-    const menu = document.getElementById("years-menu");
-    menu.innerHTML = "";
+function renderYearMenu(active) {
+    const box = document.getElementById("years-menu");
+    box.innerHTML = "";
 
     fixedYears.forEach(y => {
         const el = document.createElement("div");
-        el.className = "year-btn" + (y === activeYear ? " active" : "");
+        el.className = "year-btn" + (y === active ? " active" : "");
         el.innerText = y;
         el.onclick = () => loadGallery(y);
-        menu.appendChild(el);
+        box.appendChild(el);
     });
 }
 
-async function loadGallery(filterYear = null) {
+async function loadGallery(selected = null) {
     const latest = Math.max(...fixedYears);
-    const yearToShow = filterYear || latest;
+    const year = selected || latest;
 
-    renderYearMenu(yearToShow);
+    renderYearMenu(year);
 
     const gallery = document.getElementById("gallery");
     gallery.innerHTML = "";
 
-    const { data, error } = await supabase
+    const { data } = await client
         .from("souvenirs")
         .select("*")
-        .eq("year", yearToShow)
+        .eq("year", year)
         .order("created_at", { ascending: true });
-
-    if (error) {
-        console.error(error);
-        return;
-    }
 
     data.forEach(item => {
         const div = document.createElement("div");
@@ -351,21 +331,21 @@ async function loadGallery(filterYear = null) {
 
         div.innerHTML = item.type === "video"
             ? `<video src="${item.url}" controls></video>`
-            : `<img src="${item.url}">`;
+            : `<img src="${item.url}" />`;
 
         if (item.name || item.message) {
             div.innerHTML += `
-            <div class="info">
-                ${item.name ? `<strong>${item.name}</strong><br>` : ""}
-                ${item.message || ""}
-            </div>`;
+                <div class="info">
+                    ${item.name ? `<strong>${item.name}</strong><br>` : ""}
+                    ${item.message || ""}
+                </div>`;
         }
 
         gallery.appendChild(div);
     });
 }
 
-loadGallery();
+loadGallery(); // charge l'année la plus récente automatiquement
 </script>
 
 </body>
