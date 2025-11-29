@@ -24,7 +24,7 @@ export default {
         });
 
         // URL publique
-        const publicUrl = `https://${env.BUCKET.id}.r2.dev/${key}`;
+        const publicUrl = `https://pub-2977f39c3cc746c3b28e60884b62b9a4.r2.dev/${key}`;
 
         return Response.json({
           success: true,
