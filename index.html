@@ -224,7 +224,6 @@
 -------------------------- */
 const yearsMenu = document.getElementById("years-menu");
 
-// années disponibles
 const years = [2020, 2021, 2022, 2023, 2024, 2025];
 
 years.forEach(year => {
@@ -235,34 +234,30 @@ years.forEach(year => {
     yearsMenu.appendChild(btn);
 });
 
-// récupérer année depuis l’URL
 const params = new URLSearchParams(window.location.search);
 let selectedYear = params.get("year") || 2025;
 
-// charger la vidéo
 function loadMainVideo() {
     const videoURL = `https://pierro-videos.b-cdn.net/videos/main/${selectedYear}.MP4`;
     document.getElementById("videoSource").src = videoURL;
     document.getElementById("mainVideo").load();
 }
 
-// mise à jour UI + URL
 function selectYear(year) {
     selectedYear = year;
 
-    // highlight bouton
     document.querySelectorAll(".year-btn").forEach(btn => {
         btn.classList.toggle("active", btn.textContent == year);
     });
 
-    // changer URL sans recharger
     history.replaceState(null, "", `?year=${year}`);
 
     loadMainVideo();
+    loadGallery(selectedYear);
 }
 
-// activer bouton de l’année courante
 selectYear(selectedYear);
+loadGallery(selectedYear);
 </script>
 
 <script src="upload.js"></script>
