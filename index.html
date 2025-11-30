@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pierro – Souvenirs par année</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+<header class="header">
+    <h1>Pierro – Souvenirs</h1>
+    <p class="subtitle">Choisis une année pour voir toutes les vidéos</p>
+</header>
+
+<main class="timeline-container" id="timeline"></main>
+
+<script>
+const timeline = document.getElementById("timeline");
+
+// Années détectées automatiquement à partir des vidéos Bunny
+async function loadYears() {
+    const res = await fetch("https://vz-2e3d1691-4b7.b-cdn.net/library/552202/videos", {
+        headers: {
+            "AccessKey": "7397ef3d-1c52-43d4-95754d8feaf5-32c4-45ba"
+        }
+    });
+
+    const data = await res.json();
+    const years = [];
+
+    data.items.forEach(video => {
+        if (video.meta && video.meta.year) {
+            const y = parseInt(video.meta.year);
+            if (!years.includes(y)) years.push(y);
+        }
+    });
+
+    years.sort((a,b) => b - a);
+
+    years.forEach(year => {
+        timeline.innerHTML += `
+            <div class="year-card" onclick="window.location.href='video.html?year=${year}'">
+                <div class="year">${year}</div>
+                <div class="arrow">→</div>
+            </div>
+        `;
+    });
+}
+
+loadYears();
+</script>
+
+</body>
+</html>
