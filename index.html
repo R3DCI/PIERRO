@@ -38,6 +38,7 @@
         animation: fadeDown 1s ease-out;
     }
 
+    /* ---------- TIMELINE ---------- */
     #years-menu {
         display: flex;
         justify-content: center;
@@ -76,6 +77,7 @@
         border-radius: 2px;
     }
 
+    /* ---------- VIDEO ---------- */
     .main-video {
         width: 90%;
         max-width: 600px;
@@ -85,8 +87,12 @@
         animation: fadeIn .9s ease-out;
     }
 
-    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
 
+    /* ---------- GALLERIE ---------- */
     .section-title {
         text-align: left;
         width: 90%;
@@ -121,6 +127,7 @@
 
     .item img, .item video { width: 100%; display: block; }
 
+    /* ---------- BOUTON + ---------- */
     #upload-btn {
         position: fixed;
         bottom: 22px;
@@ -144,6 +151,7 @@
         100% { transform: scale(1); }
     }
 
+    /* ---------- POPUP ---------- */
     #popup {
         display: none;
         position: fixed;
@@ -168,30 +176,6 @@
         from { transform: scale(.9); opacity: 0; }
         to   { transform: scale(1); opacity: 1; }
     }
-
-    input, textarea, select {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #c9b8a8;
-        border-radius: 10px;
-        margin-top: 12px;
-        font-size: 1rem;
-        font-family: 'Playfair Display', serif;
-        background: #FAF8F4;
-        color: #4A3F35;
-    }
-
-    #send-btn {
-        margin-top: 20px;
-        width: 100%;
-        padding: 14px;
-        background: #4A3F35;
-        color: white;
-        border: none;
-        border-radius: 10px;
-        font-size: 1.25rem;
-        cursor: pointer;
-    }
 </style>
 </head>
 
@@ -200,17 +184,22 @@
 <h1>Pour lui</h1>
 <div class="subtitle">Souvenirs, images, vidéos… organisés par année.</div>
 
+<!-- TIMELINE -->
 <div id="years-menu"></div>
 
+<!-- VIDEO PRINCIPALE -->
 <video class="main-video" controls>
     <source src="" type="application/x-mpegURL" />
 </video>
 
+<!-- GALERIE -->
 <div class="section-title">Souvenirs</div>
 <div id="gallery"></div>
 
+<!-- BOUTON AJOUT -->
 <button id="upload-btn" onclick="openPopup()">+</button>
 
+<!-- POPUP -->
 <div id="popup">
     <div id="popup-box">
         <h2 style="margin-top:0;">Ajouter un souvenir</h2>
@@ -220,12 +209,8 @@
 
         <select id="yearInput">
             <option value="" disabled selected>Choisir l'année</option>
-            <option>2020</option>
-            <option>2021</option>
-            <option>2022</option>
-            <option>2023</option>
-            <option>2024</option>
-            <option>2025</option>
+            <option>2020</option><option>2021</option><option>2022</option>
+            <option>2023</option><option>2024</option><option>2025</option>
         </select>
 
         <input type="file" id="fileInput" accept="image/*,video/*" multiple />
@@ -233,84 +218,7 @@
     </div>
 </div>
 
-<script>
-const WORKER_URL = "https://pierro-sign.salehredapf.workers.dev";
-const R2_PUBLIC_URL = "https://pub-2977f39c3cc746c3b28e60884b62b9a4.r2.dev";
-
-// BUNNY STREAM CONFIG
-const BUNNY_LIBRARY = "552202";
-const BUNNY_CDN = "vz-2e3d1691-4b7.b-cdn.net";
-const BUNNY_KEY = "7397ef3d-1c52-43d4-95754d8feaf5-32c4-45ba";
-
-function openPopup() { document.getElementById("popup").style.display = "flex"; }
-function closePopup() { document.getElementById("popup").style.display = "none"; }
-
-async function uploadFiles() {
-    const year = document.getElementById("yearInput").value;
-    if (!year) return alert("Merci de choisir une année.");
-    const files = document.getElementById("fileInput").files;
-    if (!files.length) return alert("Choisis un fichier !");
-
-    for (const file of files) {
-        const form = new FormData();
-        form.append("file", file);
-        form.append("year", year);
-        form.append("name", document.getElementById("nameInput").value);
-        form.append("message", document.getElementById("messageInput").value);
-
-        await fetch(WORKER_URL, { method:"POST", body: form });
-    }
-
-    closePopup();
-    loadGallery();
-}
-
-const fixedYears = [2020,2021,2022,2023,2024,2025];
-
-function renderYearMenu(active) {
-    const box = document.getElementById("years-menu");
-    box.innerHTML = "";
-
-    fixedYears.forEach(y => {
-        const el = document.createElement("div");
-        el.className = "year-btn" + (y === active ? " active" : "");
-        el.innerText = y;
-        el.onclick = () => loadGallery(y);
-        box.appendChild(el);
-    });
-}
-
-async function loadGallery(selected = null) {
-    const year = selected || Math.max(...fixedYears);
-    renderYearMenu(year);
-
-    document.getElementById("gallery").innerHTML = "";
-
-    // VIDEO PRINCIPALE VIA BUNNY STREAM
-    const hlsUrl = `https://${BUNNY_CDN}/${BUNNY_LIBRARY}/${year}/playlist.m3u8`;
-
-    const check = await fetch(hlsUrl, { method:"HEAD" });
-
-    document.querySelector(".main-video source").src = check.ok ? hlsUrl : "";
-    document.querySelector(".main-video").load();
-
-    const res = await fetch(`${WORKER_URL}?year=` + year);
-    const data = await res.json();
-
-    data.files.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "item";
-
-        div.innerHTML = item.type === "video"
-            ? `<video src="${item.url}" controls></video>`
-            : `<img src="${item.url}" />`;
-
-        gallery.appendChild(div);
-    });
-}
-
-loadGallery();
-</script>
+<script src="upload.js"></script>
 
 </body>
 </html>
