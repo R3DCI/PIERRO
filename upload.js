@@ -1,17 +1,23 @@
 /* ===========================
-   CONFIG BUNNY STORAGE / STREAM
+   CONFIG BUNNY STORAGE
 =========================== */
 
-const STORAGE_URL = "https://pierro-souvenirs.b-cdn.net";
-const STORAGE_UPLOAD = "https://storage.bunnycdn.com/pierro-souvenirs";
+// ZONE BUNNY STORAGE (PUBLIC CDN)
+const STORAGE_CDN = "https://pierro-storage.b-cdn.net";
 
-const STREAM_LIBRARY_ID = "552202";
-const STREAM_API_KEY = "7397ef3d-1c52-43d4-95754d8feaf5-32c4-45ba";
-const STREAM_PULL = "https://vz-552202-b92.b-cdn.net";
+// ZONE BUNNY STORAGE (UPLOAD)
+const STORAGE_UPLOAD = "https://storage.bunnycdn.com/pierro-storage";
 
+// CLÉ D’ADMIN (READ/WRITE)
+const API_KEY = "7397ef3d-1c52-43d4-95754d8feaf5-32c4-45ba";
+
+// ANNÉES FIXES
 const fixedYears = [2020,2021,2022,2023,2024,2025];
 
-/* ========== TIMELINE ========== */
+/* ===========================
+    TIMELINE
+=========================== */
+
 function renderYearMenu(active) {
     const box = document.getElementById("years-menu");
     box.innerHTML = "";
@@ -25,83 +31,78 @@ function renderYearMenu(active) {
     });
 }
 
-/* ========== GET STREAM VIDEOS (Bunny Stream) ========== */
-async function getStreamVideos() {
-    const res = await fetch(
-        `https://video.bunnycdn.com/library/${STREAM_LIBRARY_ID}/videos`,
-        { headers: { "AccessKey": STREAM_API_KEY } }
-    );
-    const data = await res.json();
-    return data.items || [];
+/* ===========================
+    LIRE FICHIERS STORAGE
+=========================== */
+
+async function listFiles(path) {
+    try {
+        const res = await fetch(`${STORAGE_CDN}/${path}/`);
+        const text = await res.text();
+
+        return [...text.matchAll(/href="([^"]+)"/g)]
+            .map(m => m[1])
+            .filter(name => name !== "../");
+    } catch (e) {
+        return [];
+    }
 }
 
-/* ========== GET STORAGE FILES (images only) ========== */
-async function getStorageImages(year) {
-    const res = await fetch(`${STORAGE_URL}/${year}/`);
-    const data = await res.text();
+/* ===========================
+    CHARGER LA GALLERIE
+=========================== */
 
-    const matches = [...data.matchAll(/href="([^"]+)"/g)];
+async function loadGallery(year = null) {
 
-    return matches
-        .map(m => m[1])
-        .filter(f => f.match(/\.(jpg|jpeg|png|webp)$/i))
-        .map(f => ({
-            url: `${STORAGE_URL}/${year}/${f}`,
-            type: "image"
-        }));
-}
+    const selectedYear = year || Math.max(...fixedYears);
+    renderYearMenu(selectedYear);
 
-/* ========== LOAD GALLERY ========== */
-async function loadGallery(selected = null) {
-    const year = selected || Math.max(...fixedYears);
-    renderYearMenu(year);
+    // MAIN VIDEO
+    const mainVideoURL =
+        `https://pierro-videos.b-cdn.net/videos/main/${selectedYear}.MP4`;
+
+    const src = document.getElementById("videoSource");
+    src.src = mainVideoURL;
+    document.getElementById("mainVideo").load();
 
     const gallery = document.getElementById("gallery");
     gallery.innerHTML = "";
 
-    /* ===== VIDEO PRINCIPALE STREAM ===== */
-    const allVideos = await getStreamVideos();
-    const main = allVideos.find(v => v.meta?.year == year && v.meta?.type === "main");
+    /* ========== IMAGES UTILISATEURS ========== */
+    const images = await listFiles(`photos/${selectedYear}`);
 
-    const mainVideoElement = document.querySelector(".main-video source");
-
-    if (main) {
-        mainVideoElement.src = `${STREAM_PULL}/${main.guid}/playlist.m3u8`;
-    } else {
-        mainVideoElement.src = "";
-    }
-
-    document.querySelector(".main-video").load();
-
-    /* ===== PHOTOS Storage ===== */
-    const images = await getStorageImages(year);
-
-    images.forEach(item => {
+    images.forEach(filename => {
         const div = document.createElement("div");
         div.className = "item";
-        div.innerHTML = `<img src="${item.url}" />`;
+
+        div.innerHTML = `
+            <img src="${STORAGE_CDN}/photos/${selectedYear}/${filename}" />
+        `;
+
         gallery.appendChild(div);
     });
 
-    /* ===== VIDEOS Stream (autres que main) ===== */
-    allVideos
-        .filter(v => v.meta?.year == year && v.meta?.type !== "main")
-        .forEach(v => {
-            const div = document.createElement("div");
-            div.className = "item";
-            const videoURL = `${STREAM_PULL}/${v.guid}/playlist.m3u8`;
+    /* ========== VIDEOS UTILISATEURS ========== */
+    const videos = await listFiles(`videos/user/${selectedYear}`);
 
-            div.innerHTML = `
-                <video controls>
-                    <source src="${videoURL}" type="application/x-mpegURL">
-                </video>
-            `;
+    videos.forEach(filename => {
+        const div = document.createElement("div");
+        div.className = "item";
 
-            gallery.appendChild(div);
-        });
+        div.innerHTML = `
+            <video controls>
+                <source src="https://pierro-videos.b-cdn.net/videos/user/${selectedYear}/${filename}" type="video/mp4">
+            </video>
+        `;
+
+        gallery.appendChild(div);
+    });
 }
 
-/* ========== UPLOAD (IMAGE = STORAGE / VIDEO = STREAM) ========== */
+/* ===========================
+    UPLOAD
+=========================== */
+
 async function uploadFiles() {
     const year = document.getElementById("yearInput").value;
     if (!year) return alert("Choisir une année.");
@@ -111,50 +112,40 @@ async function uploadFiles() {
 
     for (const file of files) {
 
+        let uploadPath = "";
+
         if (file.type.startsWith("image")) {
-            /* ==== UPLOAD IMAGE → STORAGE ==== */
-            await fetch(`${STORAGE_UPLOAD}/${year}/${file.name}`, {
-                method: "PUT",
-                headers: { "AccessKey": STREAM_API_KEY },
-                body: file
-            });
+            // IMAGES → photos/year/
+            uploadPath = `photos/${year}/${file.name}`;
+        } 
+        
+        else if (file.type.startsWith("video")) {
+            // VIDEOS → videos/user/year/
+            uploadPath = `videos/user/${year}/${file.name}`;
+        } 
+        
+        else {
+            continue;
         }
 
-        if (file.type.startsWith("video")) {
-            /* ==== UPLOAD VIDEO → STREAM ==== */
-            const createRes = await fetch(
-                `https://video.bunnycdn.com/library/${STREAM_LIBRARY_ID}/videos`,
-                {
-                    method: "POST",
-                    headers: {
-                        "AccessKey": STREAM_API_KEY,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        title: file.name,
-                        meta: { year: year, type: "user" }
-                    })
-                }
-            );
-
-            const video = await createRes.json();
-
-            await fetch(
-                `https://video.bunnycdn.com/library/${STREAM_LIBRARY_ID}/videos/${video.guid}`,
-                {
-                    method: "PUT",
-                    headers: { "AccessKey": STREAM_API_KEY, "Content-Type": file.type },
-                    body: file
-                }
-            );
-        }
+        await fetch(`${STORAGE_UPLOAD}/${uploadPath}`, {
+            method: "PUT",
+            headers: {
+                "AccessKey": API_KEY,
+                "Content-Type": file.type
+            },
+            body: file
+        });
     }
 
     closePopup();
     loadGallery();
 }
 
-/* POPUP */
+/* ===========================
+    POPUP
+=========================== */
+
 function openPopup() {
     document.getElementById("popup").style.display = "flex";
 }
@@ -162,5 +153,7 @@ function closePopup() {
     document.getElementById("popup").style.display = "none";
 }
 
-/* START */
+/* ===========================
+    START
+=========================== */
 loadGallery();
