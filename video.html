@@ -9,6 +9,26 @@
 
 <body>
 
+<!-- LOADER -->
+<div id="loader">
+    <div class="spinner"></div>
+</div>
+
+<!-- MENU MOBILE -->
+<nav class="mobile-menu" id="mobileMenu">
+    <a href="index.html">🏠 Accueil</a>
+    <a href="https://r3dci.github.io/PIERRO/">🗂️ Années</a>
+    <a href="#">📸 Photos (à venir)</a>
+    <a href="#">ℹ️ À propos</a>
+</nav>
+
+<!-- BOUTON MENU -->
+<div class="menu-toggle" onclick="toggleMenu()">
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+</div>
+
 <header class="header small">
     <h1>Vidéos <span id="year-title"></span></h1>
     <a href="index.html" class="back">← Retour</a>
@@ -17,6 +37,18 @@
 <main id="video-grid" class="video-grid"></main>
 
 <script>
+function toggleMenu() {
+    document.getElementById("mobileMenu").classList.toggle("open");
+}
+
+// LOADER
+window.onload = () => {
+    setTimeout(() => {
+        document.getElementById("loader").style.opacity = 0;
+        setTimeout(() => document.getElementById("loader").style.display = "none", 300);
+    }, 600);
+};
+
 const year = new URLSearchParams(window.location.search).get("year");
 document.getElementById("year-title").textContent = year;
 
@@ -30,9 +62,10 @@ async function loadVideos() {
 
     const container = document.getElementById("video-grid");
 
-    list.forEach(v => {
+    list.forEach((v, i) => {
         container.innerHTML += `
-            <div class="video-card" onclick="openPlayer('${v.guid}')">
+            <div class="video-card fade-in" style="animation-delay:${i * 0.1}s"
+                onclick="openPlayer('${v.guid}')">
                 <img src="${v.thumbnailUrl}" class="thumb">
                 <div class="v-title">${v.title}</div>
             </div>
@@ -49,4 +82,3 @@ loadVideos();
 
 </body>
 </html>
-    
