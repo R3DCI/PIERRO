@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pierro Manager – Uploads</title>
+
+<!-- Uploadcare CDN -->
+<script>
+  UPLOADCARE_PUBLIC_KEY = "e1a5afd2bbe9d5c1d6ce";
+</script>
+<script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js"></script>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: white;
+    padding: 20px;
+  }
+  .login-box {
+    max-width: 350px;
+    margin: auto;
+    margin-top: 100px;
+    background: #1e1e1e;
+    padding: 25px;
+    border-radius: 12px;
+    text-align: center;
+  }
+  input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 12px;
+    border-radius: 8px;
+    border: none;
+  }
+  button {
+    width: 100%;
+    margin-top: 15px;
+    padding: 14px;
+    border: none;
+    background: #ffcb05;
+    color: black;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  #dashboard {
+    display: none;
+  }
+  .year-box {
+    background: #1f1f1f;
+    padding: 18px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+  }
+  .preview img, 
+  .preview video {
+    max-width: 150px;
+    margin-top: 10px;
+    border-radius: 8px;
+  }
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="login" class="login-box">
+  <h2>Connexion admin</h2>
+  <input type="password" id="pass" placeholder="Mot de passe admin">
+  <button onclick="login()">Se connecter</button>
+  <p style="color:red; display:none" id="error">Mot de passe incorrect</p>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <h1>📁 Pierro Manager</h1>
+  <p>Uploader photos et vidéos – classés par année automatiquement.</p>
+
+  <hr><br>
+
+  <h2>📅 Choisir une année</h2>
+  <select id="year"></select>
+
+  <h3>📤 Upload photo</h3>
+  <input type="hidden" role="uploadcare-uploader" data-images-only="true" id="photoUpload">
+  <div class="preview" id="photoPreview"></div>
+
+  <h3>📤 Upload vidéo</h3>
+  <input type="hidden" role="uploadcare-uploader" id="videoUpload">
+  <div class="preview" id="videoPreview"></div>
+</div>
+
+<script>
+// 🔐 LOGIN SYSTEM
+function login() {
+  const pass = document.getElementById("pass").value;
+  if (pass === "pierro2020") {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("dashboard").style.display = "block";
+  } else {
+    document.getElementById("error").style.display = "block";
+  }
+}
+
+// 🔢 YEARS LIST
+let select = document.getElementById("year");
+for (let y = 2020; y <= 2030; y++) {
+  let opt = document.createElement("option");
+  opt.value = y;
+  opt.innerText = y;
+  select.appendChild(opt);
+}
+
+// 🖼 PHOTO PREVIEW
+uploadcare.Widget('#photoUpload').onUploadComplete(function(info) {
+  document.getElementById("photoPreview").innerHTML =
+    `<img src="${info.cdnUrl}" />`;
+});
+
+// 🎥 VIDEO PREVIEW
+uploadcare.Widget('#videoUpload').onUploadComplete(function(info) {
+  document.getElementById("videoPreview").innerHTML =
+    `<video src="${info.cdnUrl}" controls></video>`;
+});
+</script>
+
+</body>
+</html>
