@@ -1,48 +1,67 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vidéos</title>
-<link rel="stylesheet" href="style.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Souvenir vidéo</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
-.video-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 22px;
-    padding: 30px;
-}
-.video-card {
-    background: #1a1a1a;
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px solid #333;
-    cursor: pointer;
-    transition: 0.2s;
-}
-.video-card:hover {
-    transform: scale(1.03);
-    border-color: #ffcc33;
-}
-.video-card img {
-    width: 100%;
-    border-radius: 8px;
-}
+    body {
+        margin: 0;
+        background: #FAF8F4;
+        font-family: 'Playfair Display', serif;
+        color: #4A3F35;
+        text-align: center;
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 2rem;
+        margin-bottom: 15px;
+    }
+
+    video {
+        width: 92%;
+        max-width: 700px;
+        border-radius: 14px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.18);
+    }
+
+    a {
+        display: inline-block;
+        margin-top: 25px;
+        text-decoration: none;
+        color: #4A3F35;
+        font-size: 1.3rem;
+        font-weight: 600;
+        border-bottom: 2px solid #4A3F35;
+        padding-bottom: 4px;
+    }
 </style>
 </head>
 
 <body>
 
-<header>
-    <nav>
-        <a href="index.html">⬅️ Retour</a>
-    </nav>
-</header>
+<h1>Vidéo souvenir</h1>
 
-<h1 id="year-title"></h1>
-<div class="video-grid" id="video-list"></div>
+<video id="player" controls autoplay>
+    <source src="" type="video/mp4">
+</video>
 
-<script src="upload.js"></script>
+<a href="index.html">← Retour</a>
+
+<script>
+    // Récupère ?url=...
+    const params = new URLSearchParams(window.location.search);
+    const videoUrl = params.get("url");
+
+    if (videoUrl) {
+        document.querySelector("video source").src = videoUrl;
+        document.querySelector("video").load();
+    }
+</script>
+
 </body>
 </html>
