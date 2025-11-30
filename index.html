@@ -1,90 +1,31 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pierro – Souvenirs par année</title>
-    <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pierro – Souvenirs</title>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<!-- LOADER -->
-<div id="loader">
-    <div class="spinner"></div>
-</div>
-
-<!-- MENU MOBILE -->
-<nav class="mobile-menu" id="mobileMenu">
-    <a href="index.html">🏠 Accueil</a>
-    <a href="https://r3dci.github.io/PIERRO/">🗂️ Années</a>
-    <a href="#">📸 Photos (à venir)</a>
-    <a href="#">ℹ️ À propos</a>
-</nav>
-
-<!-- BOUTON MENU -->
-<div class="menu-toggle" onclick="toggleMenu()">
-    <div class="bar"></div>
-    <div class="bar"></div>
-    <div class="bar"></div>
-</div>
-
-<header class="header">
-    <h1>Pierro – Souvenirs</h1>
-    <p class="subtitle">Choisis une année pour voir toutes les vidéos</p>
+<header>
+    <nav>
+        <a href="index.html">🏠 Accueil</a>
+        <a href="#annees">📁 Années</a>
+        <a style="opacity:0.45; cursor:not-allowed;">📸 Photos (à venir)</a>
+        <a style="opacity:0.45; cursor:not-allowed;">ℹ️ À propos</a>
+    </nav>
 </header>
 
-<main class="timeline-container" id="timeline"></main>
+<div class="container">
+    <h1>Pierro – Souvenirs</h1>
+    <p class="subtitle">Choisis une année pour voir toutes les vidéos</p>
 
-<script>
-// MENU MOBILE
-function toggleMenu() {
-    document.getElementById("mobileMenu").classList.toggle("open");
-}
+    <div id="annees" class="year-buttons"></div>
+</div>
 
-// LOADER
-window.onload = () => {
-    setTimeout(() => {
-        document.getElementById("loader").style.opacity = 0;
-        setTimeout(() => document.getElementById("loader").style.display = "none", 300);
-    }, 600);
-};
-
-// LOAD YEARS
-const timeline = document.getElementById("timeline");
-
-async function loadYears() {
-    const res = await fetch("https://vz-2e3d1691-4b7.b-cdn.net/library/552202/videos", {
-        headers: {
-            "AccessKey": "7397ef3d-1c52-43d4-95754d8feaf5-32c4-45ba"
-        }
-    });
-
-    const data = await res.json();
-    const years = [];
-
-    data.items.forEach(video => {
-        if (video.meta && video.meta.year) {
-            const y = parseInt(video.meta.year);
-            if (!years.includes(y)) years.push(y);
-        }
-    });
-
-    years.sort((a,b) => b - a);
-
-    years.forEach((year, i) => {
-        timeline.innerHTML += `
-            <div class="year-card fade-in" style="animation-delay:${i * 0.1}s"
-                 onclick="window.location.href='video.html?year=${year}'">
-                <div class="year">${year}</div>
-                <div class="arrow">→</div>
-            </div>
-        `;
-    });
-}
-
-loadYears();
-</script>
+<script src="upload.js"></script>
 
 </body>
 </html>
