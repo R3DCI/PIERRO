@@ -1,181 +1,91 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Vidéos – Pierro</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
-
-<style>
-    body {
-        margin: 0;
-        font-family: 'Playfair Display', serif;
-        background: #FAF8F4;
-        color: #4A3F35;
-        text-align: center;
-    }
-
-    h1 {
-        margin-top: 20px;
-        font-size: 2.4rem;
-        font-weight: 700;
-    }
-
-    /* TIMELINE */
-    #years-menu {
-        display: flex;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 16px;
-        margin: 22px auto;
-        font-size: 1.2rem;
-    }
-
-    .year-btn {
-        cursor: pointer;
-        opacity: .55;
-        transition: .25s;
-    }
-
-    .year-btn.active {
-        opacity: 1;
-        font-weight: 700;
-    }
-
-    .year-btn.active::after {
-        content: "";
-        display: block;
-        height: 2px;
-        width: 100%;
-        background: #4A3F35;
-        margin-top: 3px;
-        border-radius: 3px;
-    }
-
-    /* MAIN VIDEO */
-    #main-video {
-        width: 92%;
-        max-width: 650px;
-        border-radius: 14px;
-        box-shadow: 0 5px 18px rgba(0,0,0,0.2);
-        margin: 10px auto 30px;
-        display: block;
-    }
-
-    /* SECONDARY VIDEOS */
-    #list {
-        width: 90%;
-        margin: auto;
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(150px,1fr));
-        gap: 14px;
-        margin-bottom: 60px;
-    }
-
-    .thumb {
-        background: white;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 3px 12px rgba(0,0,0,0.15);
-        cursor: pointer;
-        transition: .2s;
-    }
-
-    .thumb:hover {
-        transform: scale(1.03);
-    }
-
-    .thumb video {
-        width: 100%;
-        display: block;
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vidéo – Pierro</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        video {
+            width: 100%;
+            max-width: 900px;
+            border-radius: 12px;
+            box-shadow: 0 0 25px rgba(255,255,255,0.2);
+        }
+    </style>
 </head>
-
 <body>
 
-<h1>Vidéos</h1>
+    <!-- PLAYER COMPLET -->
+    <video id="player" controls autoplay muted playsinline>
+        <source id="videoSource" src="" type="video/mp4">
+    </video>
 
-<div id="years-menu"></div>
+    <!-- SCRIPT DE CHARGEMENT AUTOMATIQUE -->
+    <script>
 
-<video id="main-video" controls>
-    <source id="main-src" src="" type="video/mp4">
-</video>
+    /*************************************************************
+     * ⚠️  À CHANGER PAR TOI :
+     *************************************************************/
+    const API_KEY     = 7397ef3d-1c52-43d4-95754d8feaf5-32c4-45ba ;  // 👉 ta clé API Stream
+    const LIBRARY_ID  = 552202;                                     // 👉 ID de ta vidéothèque
+    const CDN_HOST    = vz-2e3d1691-4b7.b-cdn.net;                // 👉 ton hostname CDN
+    const TARGET_YEAR = "2025";                                     // 👉 l’année à charger automatiquement
+    /*************************************************************/
 
-<div id="list"></div>
 
-<script>
-/* 🟫 CONFIG */
-const PULL_ZONE = "https://pierro-cdn.b-cdn.net";
-const LIBRARY_ID = "552202";
-const API_KEY = "7397ef3d-1c52-43d4-95754d8feaf5-32c4-45ba"; 
-const STREAM_CDN = "vz-2e3d1691-4b7.b-cdn.net";
+    // Fonction principale
+    async function loadVideoByYear() {
+        try {
+            const response = await fetch(
+                `https://video.bunnycdn.com/api/library/${LIBRARY_ID}/videos`,
+                {
+                    headers: {
+                        "AccessKey": API_KEY,
+                        "Content-Type": "application/json"
+                    }
+                }
+            );
 
-/* Années */
-const years = [2020, 2021, 2022, 2023, 2024, 2025];
+            const data = await response.json();
 
-/* Rendu timeline */
-function renderYearMenu(active) {
-    const div = document.getElementById("years-menu");
-    div.innerHTML = "";
+            if (!data.items) {
+                console.error("⚠️ Aucune vidéo trouvée dans la librairie.");
+                return;
+            }
 
-    years.forEach(y => {
-        const el = document.createElement("div");
-        el.className = "year-btn" + (y === active ? " active" : "");
-        el.innerText = y;
-        el.onclick = () => loadYear(y);
-        div.appendChild(el);
-    });
-}
+            // Trouver la vidéo dont la description = "year=XXXX"
+            const video = data.items.find(v => v.description === `year=${TARGET_YEAR}`);
 
-/* Charger une année */
-async function loadYear(year) {
+            if (!video) {
+                console.error(`⚠️ Aucune vidéo ne correspond à year=${TARGET_YEAR}`);
+                return;
+            }
 
-    renderYearMenu(year);
+            // Construire l’URL finale
+            const finalURL = `https://${CDN_HOST}/${video.guid}/play`;
 
-    /* --- Vidéo principale --- */
-    const mainURL = `${PULL_ZONE}/videos/main/${year}.mp4`;
-    document.getElementById("main-src").src = mainURL;
-    document.getElementById("main-video").load();
+            // Mettre la vidéo dans le player
+            const src = document.getElementById("videoSource");
+            src.src = finalURL;
+            document.getElementById("player").load();
 
-    /* --- Vidéos secondaires (stream) --- */
-    const list = document.getElementById("list");
-    list.innerHTML = "Chargement...";
-
-    const res = await fetch(`https://video.bunnycdn.com/library/${LIBRARY_ID}/videos`, {
-        headers: {
-            Accept: "application/json",
-            AccessKey: API_KEY
+        } catch (err) {
+            console.error("❌ Erreur lors du chargement :", err);
         }
-    });
+    }
 
-    const data = await res.json();
+    // Charger dès que la page s’ouvre
+    loadVideoByYear();
 
-    const videos = data.items.filter(v => v.meta && v.meta.year == year);
-
-    list.innerHTML = "";
-
-    videos.forEach(v => {
-        const url = `https://${STREAM_CDN}/${v.guid}/play`;
-
-        const card = document.createElement("div");
-        card.className = "thumb";
-        card.onclick = () => {
-            document.getElementById("main-src").src = url;
-            document.getElementById("main-video").load();
-            document.getElementById("main-video").play();
-        };
-
-        card.innerHTML = `<video src="${url}" muted></video>`;
-        list.appendChild(card);
-    });
-}
-
-/* Default = last year */
-loadYear(Math.max(...years));
-</script>
+    </script>
 
 </body>
 </html>
