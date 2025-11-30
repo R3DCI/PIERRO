@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>Vidéos – Pierro</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        margin: 0;
+        font-family: 'Playfair Display', serif;
+        background: #FAF8F4;
+        color: #4A3F35;
+        text-align: center;
+        overflow-x: hidden;
+    }
+
+    h1 {
+        margin-top: 22px;
+        margin-bottom: 6px;
+        font-size: 2.3rem;
+        font-weight: 700;
+    }
+
+    /* TIMELINE */
+    #years-menu {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin: 25px auto 18px;
+        flex-wrap: wrap;
+        font-size: 1.2rem;
+    }
+
+    .year-btn {
+        cursor: pointer;
+        opacity: .55;
+        transition: .25s;
+    }
+
+    .year-btn.active {
+        opacity: 1;
+        font-weight: 700;
+        color: #4A3F35;
+    }
+
+    .year-btn.active::after {
+        content: "";
+        display: block;
+        height: 2px;
+        width: 100%;
+        background: #4A3F35;
+        margin-top: 4px;
+        border-radius: 2px;
+    }
+
+    /* VIDEO PRINCIPALE */
+    #main-video {
+        width: 90%;
+        max-width: 650px;
+        border-radius: 14px;
+        box-shadow: 0 5px 18px rgba(0,0,0,0.2);
+        margin-bottom: 28px;
+    }
+
+    /* LISTE VIDEOS SECONDAIRES */
+    #list {
+        width: 90%;
+        margin: auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px,1fr));
+        gap: 16px;
+    }
+
+    .thumb {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .thumb:hover {
+        transform: scale(1.03);
+    }
+
+    .thumb video {
+        width: 100%;
+        display: block;
+    }
+
+</style>
+</head>
+
+<body>
+
+<h1>Vidéos</h1>
+
+<!-- TIMELINE -->
+<div id="years-menu"></div>
+
+<!-- VIDEO PRINCIPALE -->
+<video id="main-video" controls>
+    <source id="main-src" src="" type="video/mp4">
+</video>
+
+<!-- LISTE VIDEOS -->
+<div id="list"></div>
+
+<script>
+/* 🟫 CONFIG BUNNY */
+const LIBRARY_ID = "552202";
+const API_KEY = "YOUR_API_KEY_HERE"; // sera injecté côté Cloudflare, pas exposé en public
+const CDN = "vz-2e3d1691-4b7.b-cdn.net";
+
+/* 🟫 ANNÉES FIXES */
+const years = [2020,2021,2022,2023,2024,2025];
+
+/* Rendu du menu années */
+function renderYearMenu(active) {
+    const box = document.getElementById("years-menu");
+    box.innerHTML = "";
+
+    years.forEach(y => {
+        const div = document.createElement("div");
+        div.className = "year-btn" + (y === active ? " active" : "");
+        div.innerText = y;
+        div.onclick = () => loadYear(y);
+        box.appendChild(div);
+    });
+}
+
+/* 🟫 Charger les vidéos d'une année */
+async function loadYear(year) {
+
+    renderYearMenu(year);
+
+    /* 🎥 VIDÉO PRINCIPALE */
+    const mainUrl = `https://YOUR_STORAGE_PULL_ZONE/videos/main/${year}.mp4`;
+    document.getElementById("main-src").src = mainUrl;
+    document.getElementById("main-video").load();
+
+    /* 🎞 VIDÉOS SECONDAIRES (Bunny Stream) */
+    const list = document.getElementById("list");
+    list.innerHTML = "Chargement...";
+
+    const res = await fetch(`https://video.bunnycdn.com/library/${LIBRARY_ID}/videos`, {
+        headers: {
+            "Accept": "application/json",
+            "AccessKey": API_KEY
+        }
+    });
+
+    const data = await res.json();
+
+    /* filtrer par année dans metadata */
+    const filtered = data.items.filter(v => v.meta && v.meta.year == year);
+
+    list.innerHTML = "";
+
+    filtered.forEach(v => {
+        const url = `https://${CDN}/${v.guid}/play`;
+
+        const div = document.createElement("div");
+        div.className = "thumb";
+        div.onclick = () => {
+            document.getElementById("main-src").src = url;
+            document.getElementById("main-video").load();
+            document.getElementById("main-video").play();
+        };
+
+        div.innerHTML = `
+            <video src="${url}" muted></video>
+        `;
+
+        list.appendChild(div);
+    });
+}
+
+/* Démarrer sur la dernière année */
+loadYear(Math.max(...years));
+
+</script>
+
+</body>
+</html>
