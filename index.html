@@ -188,8 +188,8 @@
 <div id="years-menu"></div>
 
 <!-- VIDEO PRINCIPALE -->
-<video class="main-video" controls>
-    <source src="" type="application/x-mpegURL" />
+<video id="mainVideo" class="main-video" controls>
+    <source id="videoSource" src="" type="video/mp4" />
 </video>
 
 <!-- GALERIE -->
@@ -217,6 +217,53 @@
         <button id="send-btn" onclick="uploadFiles()">Envoyer</button>
     </div>
 </div>
+
+<script>
+/* -------------------------
+    TIMELINE + VIDEO LOAD
+-------------------------- */
+const yearsMenu = document.getElementById("years-menu");
+
+// années disponibles
+const years = [2020, 2021, 2022, 2023, 2024, 2025];
+
+years.forEach(year => {
+    const btn = document.createElement("div");
+    btn.textContent = year;
+    btn.className = "year-btn";
+    btn.onclick = () => selectYear(year);
+    yearsMenu.appendChild(btn);
+});
+
+// récupérer année depuis l’URL
+const params = new URLSearchParams(window.location.search);
+let selectedYear = params.get("year") || 2025;
+
+// charger la vidéo
+function loadMainVideo() {
+    const videoURL = `https://pierro-videos.b-cdn.net/videos/main/${selectedYear}.MP4`;
+    document.getElementById("videoSource").src = videoURL;
+    document.getElementById("mainVideo").load();
+}
+
+// mise à jour UI + URL
+function selectYear(year) {
+    selectedYear = year;
+
+    // highlight bouton
+    document.querySelectorAll(".year-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.textContent == year);
+    });
+
+    // changer URL sans recharger
+    history.replaceState(null, "", `?year=${year}`);
+
+    loadMainVideo();
+}
+
+// activer bouton de l’année courante
+selectYear(selectedYear);
+</script>
 
 <script src="upload.js"></script>
 
