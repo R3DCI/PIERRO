@@ -1,84 +1,48 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vidéos – Pierro</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vidéos</title>
+<link rel="stylesheet" href="style.css">
+
+<style>
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 22px;
+    padding: 30px;
+}
+.video-card {
+    background: #1a1a1a;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #333;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.video-card:hover {
+    transform: scale(1.03);
+    border-color: #ffcc33;
+}
+.video-card img {
+    width: 100%;
+    border-radius: 8px;
+}
+</style>
 </head>
 
 <body>
 
-<!-- LOADER -->
-<div id="loader">
-    <div class="spinner"></div>
-</div>
-
-<!-- MENU MOBILE -->
-<nav class="mobile-menu" id="mobileMenu">
-    <a href="index.html">🏠 Accueil</a>
-    <a href="https://r3dci.github.io/PIERRO/">🗂️ Années</a>
-    <a href="#">📸 Photos (à venir)</a>
-    <a href="#">ℹ️ À propos</a>
-</nav>
-
-<!-- BOUTON MENU -->
-<div class="menu-toggle" onclick="toggleMenu()">
-    <div class="bar"></div>
-    <div class="bar"></div>
-    <div class="bar"></div>
-</div>
-
-<header class="header small">
-    <h1>Vidéos <span id="year-title"></span></h1>
-    <a href="index.html" class="back">← Retour</a>
+<header>
+    <nav>
+        <a href="index.html">⬅️ Retour</a>
+    </nav>
 </header>
 
-<main id="video-grid" class="video-grid"></main>
+<h1 id="year-title"></h1>
+<div class="video-grid" id="video-list"></div>
 
-<script>
-function toggleMenu() {
-    document.getElementById("mobileMenu").classList.toggle("open");
-}
-
-// LOADER
-window.onload = () => {
-    setTimeout(() => {
-        document.getElementById("loader").style.opacity = 0;
-        setTimeout(() => document.getElementById("loader").style.display = "none", 300);
-    }, 600);
-};
-
-const year = new URLSearchParams(window.location.search).get("year");
-document.getElementById("year-title").textContent = year;
-
-async function loadVideos() {
-    const res = await fetch("https://vz-2e3d1691-4b7.b-cdn.net/library/552202/videos", {
-        headers: { "AccessKey": "7397ef3d-1c52-43d4-95754d8feaf5-32c4-45ba" }
-    });
-
-    const data = await res.json();
-    const list = data.items.filter(v => v.meta && v.meta.year == year);
-
-    const container = document.getElementById("video-grid");
-
-    list.forEach((v, i) => {
-        container.innerHTML += `
-            <div class="video-card fade-in" style="animation-delay:${i * 0.1}s"
-                onclick="openPlayer('${v.guid}')">
-                <img src="${v.thumbnailUrl}" class="thumb">
-                <div class="v-title">${v.title}</div>
-            </div>
-        `;
-    });
-}
-
-function openPlayer(id) {
-    window.location.href = "https://iframe.mediadelivery.net/embed/552202/" + id;
-}
-
-loadVideos();
-</script>
-
+<script src="upload.js"></script>
 </body>
 </html>
