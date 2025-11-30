@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Souvenir vidéo</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vidéo souvenir</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
 
@@ -14,12 +14,12 @@
         font-family: 'Playfair Display', serif;
         color: #4A3F35;
         text-align: center;
-        padding: 20px;
+        padding: 25px;
     }
 
     h1 {
         font-size: 2rem;
-        margin-bottom: 15px;
+        margin-bottom: 18px;
     }
 
     video {
@@ -32,10 +32,9 @@
     a {
         display: inline-block;
         margin-top: 25px;
-        text-decoration: none;
+        font-size: 1.2rem;
         color: #4A3F35;
-        font-size: 1.3rem;
-        font-weight: 600;
+        text-decoration: none;
         border-bottom: 2px solid #4A3F35;
         padding-bottom: 4px;
     }
@@ -47,18 +46,16 @@
 <h1>Vidéo souvenir</h1>
 
 <video id="player" controls autoplay>
-    <source src="" type="video/mp4">
+    <source src="" type="application/x-mpegURL">
 </video>
 
 <a href="index.html">← Retour</a>
 
 <script>
-    // Récupère ?url=...
-    const params = new URLSearchParams(window.location.search);
-    const videoUrl = params.get("url");
+    const url = new URLSearchParams(window.location.search).get("url");
 
-    if (videoUrl) {
-        document.querySelector("video source").src = videoUrl;
+    if (url) {
+        document.querySelector("video source").src = url;
         document.querySelector("video").load();
     }
 </script>
