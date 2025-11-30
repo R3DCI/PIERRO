@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Pierro Manager – Uploads</title>
 
-<!-- Uploadcare CDN -->
+<!-- Uploadcare Widget -->
 <script>
   UPLOADCARE_PUBLIC_KEY = "e1a5afd2bbe9d5c1d6ce";
 </script>
@@ -65,7 +65,7 @@
 
 <body>
 
-<!-- LOGIN -->
+<!-- LOGIN SCREEN -->
 <div id="login" class="login-box">
   <h2>Connexion admin</h2>
   <input type="password" id="pass" placeholder="Mot de passe admin">
@@ -73,21 +73,21 @@
   <p style="color:red; display:none" id="error">Mot de passe incorrect</p>
 </div>
 
-<!-- DASHBOARD -->
+<!-- ADMIN DASHBOARD -->
 <div id="dashboard">
   <h1>📁 Pierro Manager</h1>
-  <p>Uploader photos et vidéos – classés par année automatiquement.</p>
+  <p>Uploader photos et vidéos – classées automatiquement par année.</p>
 
   <hr><br>
 
   <h2>📅 Choisir une année</h2>
   <select id="year"></select>
 
-  <h3>📤 Upload photo</h3>
+  <h3>📸 Upload photo</h3>
   <input type="hidden" role="uploadcare-uploader" data-images-only="true" id="photoUpload">
   <div class="preview" id="photoPreview"></div>
 
-  <h3>📤 Upload vidéo</h3>
+  <h3>🎥 Upload vidéo</h3>
   <input type="hidden" role="uploadcare-uploader" id="videoUpload">
   <div class="preview" id="videoPreview"></div>
 </div>
@@ -106,21 +106,45 @@ function login() {
 
 // 🔢 YEARS LIST
 let select = document.getElementById("year");
-for (let y = 2020; y <= 2030; y++) {
+for (let y = 2020; y <= 2035; y++) {
   let opt = document.createElement("option");
   opt.value = y;
   opt.innerText = y;
   select.appendChild(opt);
 }
 
-// 🖼 PHOTO PREVIEW
-uploadcare.Widget('#photoUpload').onUploadComplete(function(info) {
+// 🖼 PHOTO UPLOAD + METADATA
+uploadcare.Widget('#photoUpload').onUploadComplete(async function(info) {
+  const year = document.getElementById("year").value;
+
+  await fetch(info.apiUrl + "/metadata/", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      year: year,
+      type: "photo",
+      category: "user"
+    })
+  });
+
   document.getElementById("photoPreview").innerHTML =
     `<img src="${info.cdnUrl}" />`;
 });
 
-// 🎥 VIDEO PREVIEW
-uploadcare.Widget('#videoUpload').onUploadComplete(function(info) {
+// 🎥 VIDEO UPLOAD + METADATA
+uploadcare.Widget('#videoUpload').onUploadComplete(async function(info) {
+  const year = document.getElementById("year").value;
+
+  await fetch(info.apiUrl + "/metadata/", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      year: year,
+      type: "video",
+      category: "user"
+    })
+  });
+
   document.getElementById("videoPreview").innerHTML =
     `<video src="${info.cdnUrl}" controls></video>`;
 });
