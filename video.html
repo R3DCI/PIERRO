@@ -1,189 +1,52 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pierro – Vidéos</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
-
-<style>
-    body {
-        margin: 0;
-        padding: 0;
-        background: #FAF8F4;
-        font-family: 'Playfair Display', serif;
-        color: #4A3F35;
-        text-align: center;
-    }
-
-    h1 {
-        margin-top: 28px;
-        font-size: 2.4rem;
-        font-weight: 700;
-    }
-
-    .subtitle {
-        opacity: .75;
-        margin-bottom: 25px;
-    }
-
-    /* --- Boutons Années --- */
-    #year-buttons {
-        display: flex;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 14px;
-        padding: 10px 20px;
-        margin-bottom: 25px;
-    }
-    .year-btn {
-        padding: 8px 16px;
-        background: #FFF;
-        border: 1px solid #C9B8AE;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 1.1rem;
-        opacity: .75;
-        transition: .25s;
-    }
-    .year-btn:hover {
-        opacity: 1;
-    }
-    .year-btn.active {
-        background: #4A3F35;
-        color: white;
-        opacity: 1;
-    }
-
-    /* --- Player Vidéo --- */
-    #video-container {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        margin-bottom: 50px;
-    }
-
-    video {
-        width: 94%;
-        max-width: 720px;
-        border-radius: 16px;
-        box-shadow: 0 6px 24px rgba(0,0,0,0.20);
-        background: black;
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vidéos – Pierro</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<h1>Souvenirs en Vidéo</h1>
-<div class="subtitle">Choisissez une année pour voir la vidéo correspondante.</div>
+<header class="header small">
+    <h1>Vidéos <span id="year-title"></span></h1>
+    <a href="index.html" class="back">← Retour</a>
+</header>
 
-<!-- Boutons Années -->
-<div id="year-buttons"></div>
-
-<!-- Player -->
-<div id="video-container">
-    <video id="player" controls autoplay muted playsinline>
-        <source id="videoSource" src="" type="video/mp4">
-    </video>
-</div>
+<main id="video-grid" class="video-grid"></main>
 
 <script>
+const year = new URLSearchParams(window.location.search).get("year");
+document.getElementById("year-title").textContent = year;
 
-/*******************************************************
- * ⚠️ TES INFOS BUNNY (déjà réglées, ne touche plus)
- *******************************************************/
-const API_KEY    = "7397ef3d-1c52-43d4-95754d8feaf5-32c4-45ba";
-const LIBRARY_ID = 552202;
-const CDN_HOST   = "vz-2e3d1691-4b7.b-cdn.net";
-/*******************************************************/
+async function loadVideos() {
+    const res = await fetch("https://vz-2e3d1691-4b7.b-cdn.net/library/552202/videos", {
+        headers: { "AccessKey": "7397ef3d-1c52-43d4-95754d8feaf5-32c4-45ba" }
+    });
 
+    const data = await res.json();
+    const list = data.items.filter(v => v.meta && v.meta.year == year);
 
-// Années affichées automatiquement de 2020 à 2035
-const YEARS = [];
-for (let y = 2020; y <= 2035; y++) YEARS.push(y);
+    const container = document.getElementById("video-grid");
 
-
-// Génération des boutons
-const btnBox = document.getElementById("year-buttons");
-YEARS.forEach(year => {
-    const b = document.createElement("div");
-    b.className = "year-btn";
-    b.innerText = year;
-    b.onclick = () => loadYear(year);
-    btnBox.appendChild(b);
-});
-
-
-// Charger toutes les vidéos
-let allVideos = [];
-
-async function fetchVideos() {
-    try {
-        const res = await fetch(
-            `https://video.bunnycdn.com/api/library/${LIBRARY_ID}/videos`,
-            { headers: { "AccessKey": API_KEY } }
-        );
-        const data = await res.json();
-        allVideos = data.items || [];
-    } catch (err) {
-        console.error("Erreur API :", err);
-    }
+    list.forEach(v => {
+        container.innerHTML += `
+            <div class="video-card" onclick="openPlayer('${v.guid}')">
+                <img src="${v.thumbnailUrl}" class="thumb">
+                <div class="v-title">${v.title}</div>
+            </div>
+        `;
+    });
 }
 
-
-// Charger une année spécifique
-async function loadYear(year) {
-
-    document.querySelectorAll(".year-btn")
-        .forEach(b => b.classList.remove("active"));
-
-    const activeBtn = [...document.querySelectorAll(".year-btn")]
-        .find(b => b.innerText == year);
-
-    if (activeBtn) activeBtn.classList.add("active");
-
-    // Trouver la vidéo dont la description = "year=XXXX"
-    const video = allVideos.find(v => v.description === `year=${year}`);
-
-    if (!video) {
-        document.getElementById("videoSource").src = "";
-        document.getElementById("player").load();
-        return;
-    }
-
-    // Construire l'URL finale
-    const url = `https://${CDN_HOST}/${video.guid}/play`;
-
-    // Charger la vidéo dans le player
-    const vs = document.getElementById("videoSource");
-    vs.src = url;
-    document.getElementById("player").load();
+function openPlayer(id) {
+    window.location.href = "https://iframe.mediadelivery.net/embed/552202/" + id;
 }
 
-
-// Initialisation
-(async () => {
-    await fetchVideos();
-
-    // Trouver la dernière année disponible automatiquement
-    let lastAvailable = null;
-
-    for (let y = YEARS.length - 1; y >= 0; y--) {
-        const year = YEARS[y];
-        if (allVideos.find(v => v.description === `year=${year}`)) {
-            lastAvailable = year;
-            break;
-        }
-    }
-
-    // Si aucune vidéo → on sélectionne l’année la plus récente
-    const startYear = lastAvailable || YEARS[YEARS.length - 1];
-
-    loadYear(startYear);
-})();
+loadVideos();
 </script>
 
 </body>
 </html>
+    
