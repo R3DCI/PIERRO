@@ -9,7 +9,7 @@ export const config = {
 };
 
 // ====== CONFIG BUNNY ======
-const STORAGE_ZONE = "pierro-videos";
+const STORAGE_ZONE = "pierro-storage";               // ← CORRIGÉ
 const API_KEY = process.env.BUNNY_API_KEY;
 const BASE_URL = `https://storage.bunnycdn.com/${STORAGE_ZONE}`;
 
@@ -17,27 +17,28 @@ const CHUNK_SIZE = 10 * 1024 * 1024; // 10 Mo
 
 export default async function handler(req) {
   try {
-    // ❌ req.query.year NE FONCTIONNE PAS DANS NEXT 13+
-    // ✅ IL FAUT RÉCUPÉRER L’ANNÉE DANS L’URL MANUELLEMENT
-    const { searchParams } = new URL(req.url);
-    const year = searchParams.get("year");
-
+    const year = req.query.year;
     if (!year) {
       return NextResponse.json({ error: "Année manquante." }, { status: 400 });
     }
 
     const filename = `${year}.mp4`;
-    const remotePath = `main/${filename}`;
 
-    // ===== Lecture du fichier envoyé =====
+    // ===============================
+    //  chemin validé :
+    //  pierro-storage / videos / main / 2025.mp4
+    // ===============================
+    const remotePath = `videos/main/${filename}`;
+
+    // ====== Lecture du fichier ======
     const chunks = [];
-    for await (const c of req.body) chunks.push(c);
+    for await (const c of req) chunks.push(c);
     const buffer = Buffer.concat(chunks);
     const size = buffer.length;
 
-    console.log("UPLOAD VIDÉO → Taille =", size);
+    console.log("Taille fichier :", size, "octets");
 
-    // ===== 1. INIT =====
+    // ====== 1. INIT ======
     const init = await fetch(`${BASE_URL}/${remotePath}`, {
       method: "PUT",
       headers: {
@@ -47,11 +48,11 @@ export default async function handler(req) {
     });
 
     if (!init.ok) {
-      console.log("INIT ERROR:", await init.text());
+      console.log("Erreur INIT :", await init.text());
       return NextResponse.json({ error: "Erreur init upload" }, { status: 500 });
     }
 
-    // ===== 2. PATCH CHUNK =====
+    // ====== 2. UPLOAD PAR CHUNKS ======
     let offset = 0;
 
     while (offset < size) {
@@ -69,31 +70,32 @@ export default async function handler(req) {
       });
 
       if (!upload.ok) {
-        console.log("CHUNK ERROR:", await upload.text());
+        console.log("Erreur chunk :", await upload.text());
         return NextResponse.json({ error: "Erreur upload chunk" }, { status: 500 });
       }
 
       offset = end;
     }
 
-    // ===== 3. FINAL =====
+    // ====== 3. FINALISATION ======
     const done = await fetch(`${BASE_URL}/${remotePath}`, {
       method: "POST",
       headers: { AccessKey: API_KEY }
     });
 
     if (!done.ok) {
-      console.log("FINAL ERROR:", await done.text());
+      console.log("Erreur FINAL :", await done.text());
       return NextResponse.json({ error: "Erreur finalisation" }, { status: 500 });
     }
 
+    // ====== OK ======
     return NextResponse.json({
       success: true,
-      url: `https://pierro-videos.b-cdn.net/main/${filename}`
+      url: `https://pierro-storage.b-cdn.net/videos/main/${filename}`
     });
 
-  } catch (err) {
-    console.log("ERREUR SERVEUR upload-main:", err);
+  } catch (e) {
+    console.log("Erreur serveur upload-main :", e);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
 }
