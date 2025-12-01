@@ -2,16 +2,16 @@
         CONFIG BUNNY STORAGE
 =========================== */
 
-// CDN pour AFFICHER les photos
+// CDN pour les photos
 const STORAGE_CDN = "https://pierro-cdn.b-cdn.net";
 
-// CDN pour AFFICHER les vidéos
+// CDN pour les vidéos
 const VIDEO_CDN = "https://pierro-videos.b-cdn.net";
 
-// Storage origin pour LISTER & UPLOAD via API (⚠️ ID Storage Zone = 1277988)
-const STORAGE_API = "https://storage.bunnycdn.com/1277988";
+// API Bunny Storage CORRECTE
+const STORAGE_API = "https://storage.bunnycdn.com/pierro-storage";
 
-// Clé API (lecture + écriture) — Password du Storage Zone
+// Clé password de ta storage zone
 const API_KEY = "e0d3b676-75f2-437c-a032ac4238e1-8325-48c1";
 
 
