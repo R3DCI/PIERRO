@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin – Vidéo principale</title>
+
+<style>
+body {
+    background: #FAF8F4;
+    font-family: 'Playfair Display', serif;
+    text-align: center;
+    padding: 40px 20px;
+    color: #4A3F35;
+}
+h1 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+input, select {
+    width: 90%;
+    max-width: 320px;
+    padding: 12px;
+    margin: 10px auto;
+    border-radius: 10px;
+    border: 2px solid #D6C5B4;
+}
+button {
+    background: #4A3F35;
+    color: white;
+    padding: 14px 22px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    margin-top: 15px;
+}
+#status {
+    margin-top: 25px;
+    font-size: 1.1rem;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Uploader la vidéo principale</h1>
+
+<select id="year">
+    <option disabled selected>Choisir l'année</option>
+    <option>2020</option>
+    <option>2021</option>
+    <option>2022</option>
+    <option>2023</option>
+    <option>2024</option>
+    <option>2025</option>
+</select>
+
+<br>
+
+<input type="file" id="file" accept="video/*">
+
+<br>
+<button onclick="uploadMain()">Envoyer</button>
+
+<div id="status"></div>
+
+<script>
+async function uploadMain() {
+    const year = document.getElementById("year").value;
+    const file = document.getElementById("file").files[0];
+    const status = document.getElementById("status");
+
+    if (!year || !file) {
+        status.innerHTML = "Sélectionner une année et un fichier.";
+        return;
+    }
+
+    status.innerHTML = "Envoi en cours…";
+
+    const res = await fetch(`/api/upload-main?year=${year}`, {
+        method: "POST",
+        headers: {
+            "x-file-name": `main/${year}.mp4`
+        },
+        body: file
+    });
+
+    const json = await res.json();
+
+    if (json.url) {
+        status.innerHTML = "✔ Vidéo principale mise à jour.<br><br>URL :<br>" + json.url;
+    } else {
+        status.innerHTML = "❌ Erreur.";
+    }
+}
+</script>
+
+</body>
+</html>
