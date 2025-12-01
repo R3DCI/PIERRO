@@ -1,107 +1,34 @@
-// =======================================================
-//               PANEL ADMIN — UPLOAD PRINCIPAL
-//         Compatible fichiers jusqu'à 5 Go (OK BunnyCDN)
-// =======================================================
+// ===============================
+//      CONFIG PIN
+// ===============================
+const ADMIN_PIN = "0801";
 
-// Sélecteurs DOM
-const uploadMainBtn = document.getElementById("upload-main-btn");
-const mainYearSelect = document.getElementById("mainYear");
-const mainFileInput = document.getElementById("mainFile");
-const progressBar = document.getElementById("progress-bar");
-const progressText = document.getElementById("progress-text");
+// Sélecteurs
+const pinInput = document.getElementById("pin");
+const pinBtn = document.getElementById("pin-btn");
+const adminContent = document.getElementById("admin-content");
 
+// Au chargement : cacher le contenu admin
+adminContent.style.display = "none";
 
-// =======================================================
-//      FONCTION : Upload Principal (via /api/upload-main)
-// =======================================================
+// ===============================
+//      Vérification du PIN
+// ===============================
+pinBtn.addEventListener("click", () => {
+    const entered = pinInput.value.trim();
 
-async function uploadMainVideo() {
-    const year = mainYearSelect.value;
-    const file = mainFileInput.files[0];
-
-    if (!year) return alert("Sélectionne une année.");
-    if (!file) return alert("Sélectionne une vidéo.");
-
-    // Reset affichage
-    progressText.innerText = "0%";
-    progressBar.style.width = "0%";
-
-    // Appel au endpoint Node pour l’upload en chunks
-    const url = `/api/upload-main?year=${year}`;
-
-    // Upload fetch → on stream le fichier au backend
-    const response = await fetch(url, {
-        method: "POST",
-        body: file
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-        console.error("Erreur upload :", result);
-        alert("Erreur pendant l'envoi.");
-        return;
+    if (entered === ADMIN_PIN) {
+        adminContent.style.display = "block";   // on affiche l’admin
+        document.getElementById("pin-zone").style.display = "none"; // on cache le formulaire PIN
+    } else {
+        alert("PIN incorrect ❌");
     }
-
-    alert("Vidéo principale uploadée avec succès !");
-}
-
-
-// =======================================================
-//        GESTION DE LA BARRE DE PROGRESSION LOCALE
-//       (simulation car chunk fait côté serveur)
-// =======================================================
-//
-// ⚠️ Note : Avec Bunny, le réel progrès serveur n’est
-//           pas renvoyé chunk par chunk → on simule la
-//           progression locale pendant l'envoi,
-//           ce qui est acceptable et courant.
-//
-// =======================================================
-
-mainFileInput.addEventListener("change", () => {
-    const file = mainFileInput.files[0];
-    if (!file) return;
-
-    progressText.innerText = "0%";
-    progressBar.style.width = "0%";
-});
-
-uploadMainBtn.addEventListener("click", async () => {
-    const file = mainFileInput.files[0];
-    if (!file) return uploadMainVideo();
-
-    // Simulation progrès locale pendant envoi
-    let sent = 0;
-    const total = file.size;
-    const step = Math.max(500_000, total / 120); // 500 kb min + rythme ajusté
-
-    const interval = setInterval(() => {
-        sent += step;
-        let percent = Math.min(100, Math.floor((sent / total) * 100));
-        progressText.innerText = percent + "%";
-        progressBar.style.width = percent + "%";
-
-        if (percent >= 100) clearInterval(interval);
-    }, 120);
-
-    // Lancer l'upload réel
-    await uploadMainVideo();
 });
 
 
-// =======================================================
-//      FUTURE : Upload visiteurs (à activer après)
-// =======================================================
+// ===============================
+//   (PLUS TARD) Upload visiteurs
+// ===============================
 
-/*
-
-Ici tu ajouteras upload-visiteurs.js
-qui utilisera la même logique bunny CDN.
-
-Je suis prêt à te le faire dès que tu me dis :
-"ENVOIE upload-visiteurs.js"
-
-*/
-
-// FIN.
+// Ce bloc sera activé ensuite.
+console.log("Admin ready ✔");
