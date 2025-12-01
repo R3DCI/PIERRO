@@ -1,24 +1,19 @@
-// ===============================
-//  UPLOAD PRINCIPALE → BUNNY CDN
-// ===============================
+// ==================================================
+//  UPLOAD VIDÉO PRINCIPALE → BUNNY STORAGE (PATCH)
+// ==================================================
 
 import { NextResponse } from "next/server";
-
-// Taille des chunks : 10 Mo
-const CHUNK_SIZE = 10 * 1024 * 1024;
-
-// Informations Bunny
-const STORAGE_ZONE = "pierro-videos";
-const API_KEY = process.env.BUNNY_API_KEY; 
-const BASE_URL = `https://storage.bunnycdn.com/${STORAGE_ZONE}`;
-
-// ===============================
-//  UPLOAD PRINCIPAL (5 Go OK)
-// ===============================
 
 export const config = {
   api: { bodyParser: false }
 };
+
+// ====== CONFIG BUNNY ======
+const STORAGE_ZONE = "pierro-videos"; // ta zone vidéos
+const API_KEY = process.env.BUNNY_API_KEY;
+const BASE_URL = `https://storage.bunnycdn.com/${STORAGE_ZONE}`;
+
+const CHUNK_SIZE = 10 * 1024 * 1024; // 10 Mo
 
 export default async function handler(req) {
   try {
@@ -28,90 +23,74 @@ export default async function handler(req) {
     }
 
     const filename = `${year}.mp4`;
-    const fullPath = `main/${filename}`;
+    const remotePath = `videos/main/${filename}`;
 
-    // Lecture du fichier depuis la requête
+    // ====== Lecture du fichier envoyé ======
     const chunks = [];
-    for await (const chunk of req) {
-      chunks.push(chunk);
-    }
-    const fileBuffer = Buffer.concat(chunks);
-    const fileSize = fileBuffer.length;
+    for await (const c of req) chunks.push(c);
+    const buffer = Buffer.concat(chunks);
+    const size = buffer.length;
 
-    console.log("Taille totale fichier :", fileSize);
+    console.log("Taille fichier :", size, "octets");
 
-    // ==============================
-    // 1 • INIT UPLOAD
-    // ==============================
-
-    const initRes = await fetch(`${BASE_URL}/${fullPath}`, {
+    // ====== 1. INIT ======
+    const init = await fetch(`${BASE_URL}/${remotePath}`, {
       method: "PUT",
       headers: {
         AccessKey: API_KEY,
-        "Content-Type": "application/octet-stream",
-        "Content-Length": 0,
-        "Upload-Checksum": "true"
+        "Content-Type": "application/octet-stream"
       }
     });
 
-    if (!initRes.ok) {
-      console.log("Erreur init :", await initRes.text());
+    if (!init.ok) {
+      console.log(await init.text());
       return NextResponse.json({ error: "Erreur init upload" }, { status: 500 });
     }
 
-    // ==============================
-    // 2 • ENVOI PAR CHUNKS
-    // ==============================
-
+    // ====== 2. ENVOI PAR CHUNKS ======
     let offset = 0;
-    let part = 1;
+    while (offset < size) {
+      const end = Math.min(offset + CHUNK_SIZE, size);
+      const chunk = buffer.slice(offset, end);
 
-    while (offset < fileSize) {
-      const end = Math.min(offset + CHUNK_SIZE, fileSize);
-      const chunk = fileBuffer.slice(offset, end);
-
-      const uploadPart = await fetch(`${BASE_URL}/${fullPath}`, {
+      const upload = await fetch(`${BASE_URL}/${remotePath}`, {
         method: "PATCH",
         headers: {
           AccessKey: API_KEY,
           "Content-Type": "application/octet-stream",
-          "Content-Range": `bytes ${offset}-${end - 1}/${fileSize}`
+          "Content-Range": `bytes ${offset}-${end - 1}/${size}`
         },
         body: chunk
       });
 
-      if (!uploadPart.ok) {
-        console.log("Erreur part", part, ":", await uploadPart.text());
+      if (!upload.ok) {
+        console.log("Erreur chunk :", await upload.text());
         return NextResponse.json({ error: "Erreur upload chunk" }, { status: 500 });
       }
 
-      console.log(`Chunk ${part} envoyé (${offset} → ${end})`);
+      console.log(`Chunk OK : ${offset} → ${end}`);
       offset = end;
-      part++;
     }
 
-    // ==============================
-    // 3 • FIN UPLOAD
-    // ==============================
-
-    const completeRes = await fetch(`${BASE_URL}/${fullPath}`, {
+    // ====== 3. FINALISATION ======
+    const done = await fetch(`${BASE_URL}/${remotePath}`, {
       method: "POST",
       headers: { AccessKey: API_KEY }
     });
 
-    if (!completeRes.ok) {
-      console.log("Erreur complete :", await completeRes.text());
-      return NextResponse.json({ error: "Erreur finalisation upload" }, { status: 500 });
+    if (!done.ok) {
+      console.log(await done.text());
+      return NextResponse.json({ error: "Erreur finalisation" }, { status: 500 });
     }
 
-    console.log("UPLOAD TERMINÉ !");
+    // ====== OK ======
     return NextResponse.json({
       success: true,
-      url: `https://pierro-videos.b-cdn.net/main/${filename}`
+      url: `https://pierro-videos.b-cdn.net/videos/main/${filename}`
     });
 
-  } catch (err) {
-    console.log("Erreur serveur :", err);
+  } catch (e) {
+    console.log("Erreur serveur upload-main :", e);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
 }
