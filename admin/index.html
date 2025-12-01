@@ -3,97 +3,262 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin – Vidéo principale</title>
+<title>Admin — Notre Deuxième Maison</title>
 
 <style>
 body {
-    background: #FAF8F4;
-    font-family: 'Playfair Display', serif;
-    text-align: center;
-    padding: 40px 20px;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #F5F3EF;
     color: #4A3F35;
 }
-h1 {
-    font-size: 2rem;
-    margin-bottom: 20px;
+
+/* ----- LOGIN PIN ----- */
+#login-screen {
+    position: fixed;
+    inset: 0;
+    background: #F5F3EF;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
-input, select {
+#login-box {
+    background: white;
+    padding: 28px;
     width: 90%;
-    max-width: 320px;
+    max-width: 360px;
+    border-radius: 14px;
+    box-shadow: 0 5px 14px rgba(0,0,0,0.15);
+    text-align: center;
+}
+#login-box input {
+    width: 100%;
     padding: 12px;
-    margin: 10px auto;
+    margin-top: 14px;
     border-radius: 10px;
     border: 2px solid #D6C5B4;
 }
-button {
+#login-box button {
+    width: 100%;
+    margin-top: 16px;
+    padding: 12px;
     background: #4A3F35;
     color: white;
-    padding: 14px 22px;
     border: none;
     border-radius: 10px;
     font-size: 1.1rem;
     cursor: pointer;
-    margin-top: 15px;
 }
-#status {
-    margin-top: 25px;
-    font-size: 1.1rem;
+
+/* ----- DASHBOARD ----- */
+#dashboard {
+    display: none;
+    padding: 20px;
+}
+h1 {
+    margin-top: 0;
+}
+
+.section {
+    background: white;
+    padding: 20px;
+    margin-bottom: 22px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+}
+
+label { display:block; margin-bottom:6px; }
+
+select, input[type="file"] {
+    width: 100%;
+    margin-bottom: 14px;
+    padding: 10px;
+    border: 2px solid #D6C5B4;
+    border-radius: 10px;
+}
+
+button.action {
+    padding: 10px 20px;
+    background: #4A3F35;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+/* Table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+}
+th, td {
+    border-bottom: 1px solid #DDD0C6;
+    padding: 10px;
+}
+td button {
+    background: #B14646;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
 }
 </style>
 </head>
-
 <body>
 
-<h1>Uploader la vidéo principale</h1>
+<!-- LOGIN -->
+<div id="login-screen">
+    <div id="login-box">
+        <h2>Accès Admin</h2>
+        <input type="password" id="pin" placeholder="Entrer le code PIN">
+        <button onclick="checkPIN()">Connexion</button>
+        <div id="login-error" style="color:red;margin-top:10px;"></div>
+    </div>
+</div>
 
-<select id="year">
-    <option disabled selected>Choisir l'année</option>
-    <option>2020</option>
-    <option>2021</option>
-    <option>2022</option>
-    <option>2023</option>
-    <option>2024</option>
-    <option>2025</option>
-</select>
+<!-- DASHBOARD -->
+<div id="dashboard">
+    <h1>Panel Admin</h1>
 
-<br>
+    <!-- UPLOAD MAIN VIDEO -->
+    <div class="section">
+        <h2>Vidéo principale</h2>
 
-<input type="file" id="file" accept="video/*">
+        <label>Année</label>
+        <select id="mainYear">
+            <option disabled selected>Choisir</option>
+            <option>2020</option><option>2021</option><option>2022</option>
+            <option>2023</option><option>2024</option><option>2025</option>
+        </select>
 
-<br>
-<button onclick="uploadMain()">Envoyer</button>
+        <input type="file" id="mainFile" accept="video/*">
+        <button class="action" onclick="uploadMain()">Uploader la vidéo principale</button>
 
-<div id="status"></div>
+        <div id="mainStatus" style="margin-top:10px;"></div>
+    </div>
+
+    <!-- VISITOR FILES -->
+    <div class="section">
+        <h2>Fichiers visiteurs</h2>
+
+        <label>Année</label>
+        <select id="visitorYear" onchange="loadVisitorFiles()">
+            <option disabled selected>Choisir</option>
+            <option>2020</option><option>2021</option><option>2022</option>
+            <option>2023</option><option>2024</option><option>2025</option>
+        </select>
+
+        <div id="visitorList"></div>
+    </div>
+
+    <!-- MAIN VIDEO LIST -->
+    <div class="section">
+        <h2>Vidéos principales enregistrées</h2>
+        <div id="mainList"></div>
+    </div>
+</div>
 
 <script>
+/* ===== LOGIN ===== */
+function checkPIN() {
+    const pin = document.getElementById("pin").value;
+    if (pin === "0801") {
+        document.getElementById("login-screen").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+    } else {
+        document.getElementById("login-error").innerHTML = "Code incorrect.";
+    }
+}
+
+/* ===== UPLOAD MAIN VIDEO ===== */
 async function uploadMain() {
-    const year = document.getElementById("year").value;
-    const file = document.getElementById("file").files[0];
-    const status = document.getElementById("status");
+    const year = document.getElementById("mainYear").value;
+    const file = document.getElementById("mainFile").files[0];
+    const status = document.getElementById("mainStatus");
 
     if (!year || !file) {
-        status.innerHTML = "Sélectionner une année et un fichier.";
+        status.innerHTML = "Sélectionner année + fichier.";
         return;
     }
 
-    status.innerHTML = "Envoi en cours…";
+    status.innerHTML = "Envoi…";
 
     const res = await fetch(`/api/upload-main?year=${year}`, {
         method: "POST",
-        headers: {
-            "x-file-name": `main/${year}.mp4`
-        },
+        headers: { "x-file-name": `main/${year}.mp4` },
         body: file
     });
 
     const json = await res.json();
-
-    if (json.url) {
-        status.innerHTML = "✔ Vidéo principale mise à jour.<br><br>URL :<br>" + json.url;
-    } else {
-        status.innerHTML = "❌ Erreur.";
-    }
+    status.innerHTML = "✔ Vidéo mise à jour : " + json.url;
 }
+
+/* ===== LIST VISITOR FILES ===== */
+async function loadVisitorFiles() {
+    const year = document.getElementById("visitorYear").value;
+    const box = document.getElementById("visitorList");
+
+    box.innerHTML = "Chargement...";
+
+    const res = await fetch(`/api/list?prefix=${year}/`);
+    const files = await res.json();
+
+    let html = "<table><tr><th>Fichier</th><th>Action</th></tr>";
+
+    files.forEach(url => {
+        html += `
+            <tr>
+                <td><a href="${url}" target="_blank">${url.split("/").pop()}</a></td>
+                <td><button onclick="deleteFile('${url}')">Supprimer</button></td>
+            </tr>
+        `;
+    });
+
+    html += "</table>";
+
+    box.innerHTML = html;
+}
+
+/* ===== LIST MAIN VIDEOS ===== */
+async function loadMainVideos() {
+    const box = document.getElementById("mainList");
+
+    const res = await fetch(`/api/list?prefix=main/`);
+    const files = await res.json();
+
+    let html = "<table><tr><th>Vidéo</th><th>Action</th></tr>";
+
+    files.forEach(url => {
+        html += `
+            <tr>
+                <td><a href="${url}" target="_blank">${url.split("/").pop()}</a></td>
+                <td><button onclick="deleteFile('${url}')">Supprimer</button></td>
+            </tr>
+        `;
+    });
+
+    html += "</table>";
+    box.innerHTML = html;
+}
+
+/* ===== DELETE FILE ===== */
+async function deleteFile(url) {
+    if (!confirm("Supprimer ce fichier ?")) return;
+
+    await fetch(`/api/delete?url=${encodeURIComponent(url)}`, {
+        method: "DELETE"
+    });
+
+    alert("Fichier supprimé.");
+
+    loadVisitorFiles();
+    loadMainVideos();
+}
+
+loadMainVideos();
 </script>
 
 </body>
