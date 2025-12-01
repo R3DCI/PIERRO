@@ -2,17 +2,18 @@
    CONFIG BUNNY STORAGE
 =========================== */
 
-// CDN PUBLIC POUR LECTURE
+// CDN pour AFFICHER les médias
 const STORAGE_CDN = "https://pierro-cdn.b-cdn.net";
 
-// ENDPOINT POUR UPLOAD
-const STORAGE_UPLOAD = "https://storage.bunnycdn.com/pierro-storage";
+// Storage origin pour LISTER via API
+const STORAGE_API = "https://storage.bunnycdn.com/pierro-storage";
 
-// CLÉ D’ACCÈS ADMIN (WRITE)
-const API_KEY = "e8637941-78b4-4064-b07bfd35385a-b1c2-4aaa"; // <-- ta vraie clé ici
+// Clé API (lecture + écriture)
+const API_KEY = "e8637941-78b4-4064-b07bfd35385a-b1c2-4aaa"; // ← METS TA VRAIE CLÉ ICI !
 
-// ANNÉES FIXES
+// Années fixes
 const fixedYears = [2020, 2021, 2022, 2023, 2024, 2025];
+
 
 /* ===========================
     TIMELINE
@@ -31,35 +32,41 @@ function renderYearMenu(active) {
     });
 }
 
+
 /* ===========================
-    LIRE FICHIERS STORAGE
+   LIST FILES (API STORAGE)
 =========================== */
 
-async function listFiles(path) {
-    try {
-        const res = await fetch(`${STORAGE_CDN}/${path}/`);
-        const text = await res.text();
+async function listFilesAPI(folderPath) {
+    const url = `${STORAGE_API}/${folderPath}`;
 
-        return [...text.matchAll(/href="([^"]+)"/g)]
-            .map(m => m[1])
-            .filter(name => name !== "../");
-    } catch (e) {
-        return [];
-    }
+    const res = await fetch(url, {
+        method: "GET",
+        headers: {
+            "AccessKey": API_KEY
+        }
+    });
+
+    if (!res.ok) return [];
+
+    const files = await res.json();
+
+    return files.items
+        ? files.items.map(f => f.objectName)
+        : [];
 }
 
+
 /* ===========================
-    CHARGER LA GALLERIE
+   LOAD GALLERY
 =========================== */
 
 async function loadGallery(year = null) {
-
     const selectedYear = year || Math.max(...fixedYears);
     renderYearMenu(selectedYear);
 
-    // MAIN VIDEO
-    const mainVideoURL =
-        `https://pierro-videos.b-cdn.net/videos/main/${selectedYear}.MP4`;
+    /* ========== MAIN VIDEO ========== */
+    const mainVideoURL = `https://pierro-videos.b-cdn.net/videos/main/${selectedYear}.MP4`;
 
     const src = document.getElementById("videoSource");
     src.src = mainVideoURL;
@@ -68,8 +75,8 @@ async function loadGallery(year = null) {
     const gallery = document.getElementById("gallery");
     gallery.innerHTML = "";
 
-    /* ========== IMAGES UTILISATEURS ========== */
-    const images = await listFiles(`photos/${selectedYear}`);
+    /* ========== IMAGES ========== */
+    const images = await listFilesAPI(`photos/${selectedYear}/`);
 
     images.forEach(filename => {
         const div = document.createElement("div");
@@ -78,12 +85,11 @@ async function loadGallery(year = null) {
         div.innerHTML = `
             <img src="${STORAGE_CDN}/photos/${selectedYear}/${filename}" />
         `;
-
         gallery.appendChild(div);
     });
 
     /* ========== VIDEOS UTILISATEURS ========== */
-    const videos = await listFiles(`videos/user/${selectedYear}`);
+    const videos = await listFilesAPI(`videos/user/${selectedYear}/`);
 
     videos.forEach(filename => {
         const div = document.createElement("div");
@@ -91,16 +97,16 @@ async function loadGallery(year = null) {
 
         div.innerHTML = `
             <video controls>
-                <source src="${STORAGE_CDN}/videos/user/${selectedYear}/${filename}" type="video/mp4">
+                <source src="https://pierro-videos.b-cdn.net/videos/user/${selectedYear}/${filename}" type="video/mp4">
             </video>
         `;
-
         gallery.appendChild(div);
     });
 }
 
+
 /* ===========================
-    UPLOAD
+   UPLOAD
 =========================== */
 
 async function uploadFiles() {
@@ -115,20 +121,14 @@ async function uploadFiles() {
         let uploadPath = "";
 
         if (file.type.startsWith("image")) {
-            // IMAGES → photos/year/
             uploadPath = `photos/${year}/${file.name}`;
-        } 
-        
-        else if (file.type.startsWith("video")) {
-            // VIDEOS → videos/user/year/
+        } else if (file.type.startsWith("video")) {
             uploadPath = `videos/user/${year}/${file.name}`;
-        } 
-        
-        else {
+        } else {
             continue;
         }
 
-        await fetch(`${STORAGE_UPLOAD}/${uploadPath}`, {
+        await fetch(`${STORAGE_API}/${uploadPath}`, {
             method: "PUT",
             headers: {
                 "AccessKey": API_KEY,
@@ -142,18 +142,22 @@ async function uploadFiles() {
     loadGallery();
 }
 
+
 /* ===========================
-    POPUP
+   POPUP
 =========================== */
 
 function openPopup() {
     document.getElementById("popup").style.display = "flex";
 }
+
 function closePopup() {
     document.getElementById("popup").style.display = "none";
 }
 
+
 /* ===========================
-    START
+   START
 =========================== */
+
 loadGallery();
