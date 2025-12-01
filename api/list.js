@@ -1,10 +1,10 @@
 import { list } from "@vercel/blob";
 import { NextResponse } from "next/server";
 
-export async function GET(req) {
-    const prefix = new URL(req.url).searchParams.get("prefix") || "";
+export default async function handler(req) {
+  const prefix = req.query.prefix || "";
 
-    const { blobs } = await list({ prefix });
+  const { blobs } = await list({ prefix });
 
-    return NextResponse.json(blobs.map(b => b.url));
+  return NextResponse.json(blobs.map(b => b.url));
 }
