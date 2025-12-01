@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Admin · Notre deuxième maison</title>
+
+<style>
+    body {
+        margin: 0;
+        background: #F5EFE6;
+        font-family: 'Playfair Display', serif;
+        color: #4A3F35;
+        padding: 0;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 20px;
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 35px;
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+
+    .card {
+        background: white;
+        padding: 25px;
+        margin-bottom: 35px;
+        border-radius: 18px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    }
+
+    .card h2 {
+        margin-top: 0;
+        margin-bottom: 18px;
+        font-size: 1.6rem;
+    }
+
+    select, input[type="file"], input[type="text"] {
+        width: 100%;
+        padding: 12px;
+        font-size: 1rem;
+        border-radius: 10px;
+        border: 2px solid #D6C5B4;
+        margin-bottom: 15px;
+        background: #FFFDFC;
+        font-family: 'Playfair Display', serif;
+    }
+
+    .btn {
+        background: linear-gradient(135deg, #CE9E62, #B38247);
+        border: none;
+        color: white;
+        padding: 14px;
+        width: 100%;
+        font-size: 1.1rem;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 700;
+        box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+        transition: 0.25s;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .progress-bar {
+        width: 100%;
+        background: #E8DCCF;
+        height: 10px;
+        border-radius: 12px;
+        margin-top: 8px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 10px;
+        background: #4A3F35;
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+
+    .small-info {
+        margin-top: 8px;
+        font-size: 0.9rem;
+        opacity: 0.7;
+    }
+
+    .error {
+        color: red;
+        margin-top: 8px;
+        font-size: 0.95rem;
+    }
+
+    .video-list {
+        margin-top: 15px;
+    }
+
+    .video-row {
+        background: #FFF7EF;
+        padding: 14px;
+        border-radius: 14px;
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 1rem;
+    }
+
+    .delete-btn {
+        background: #b84a3c;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.95rem;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Panel Admin</h1>
+
+    <!-- ========================== CODE PIN ========================== -->
+    <div class="card">
+        <h2>Authentification</h2>
+        <input id="pin" type="password" placeholder="Entrer le code PIN">
+        <button class="btn" onclick="checkPIN()">Valider</button>
+        <div id="pinError" class="error"></div>
+    </div>
+
+
+    <!-- ========================== UPLOAD VIDEO PRINCIPALE ========================== -->
+    <div class="card" id="mainUploader" style="display:none;">
+        <h2>Vidéo principale</h2>
+
+        <select id="mainYear">
+            <option disabled selected>Choisir une année</option>
+            <option>2020</option><option>2021</option><option>2022</option>
+            <option>2023</option><option>2024</option><option>2025</option>
+        </select>
+
+        <input type="file" id="mainFile" accept="video/*">
+
+        <button class="btn" onclick="uploadMain()">Uploader la vidéo principale</button>
+
+        <div class="progress-bar"><div class="progress-fill" id="mainProgress"></div></div>
+
+        <div id="mainStatus" class="error"></div>
+    </div>
+
+
+    <!-- ========================== LISTE DES VIDÉOS PRINCIPALES ========================== -->
+    <div class="card" id="mainVideoList" style="display:none;">
+        <h2>Vidéos principales enregistrées</h2>
+
+        <div id="mainListContainer" class="video-list">
+            <!-- rempli par admin.js -->
+        </div>
+    </div>
+
+</div>
+
+
+<!-- ========================== JS ========================== -->
+<script src="admin.js?v=1"></script>
+
+</body>
+</html>
