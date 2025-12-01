@@ -2,21 +2,21 @@
    CONFIG BUNNY STORAGE
 =========================== */
 
-// CDN pour AFFICHER les médias
+// CDN pour afficher
 const STORAGE_CDN = "https://pierro-cdn.b-cdn.net";
 
-// Storage origin pour LISTER via API
-const STORAGE_API = "https://storage.bunnycdn.com/pierro-storage";
+// ENDPOINT API POUR TON STORAGE ZONE (IMPORTANT)
+const STORAGE_API = "https://pierro-storage.storage.bunnycdn.com";
 
-// Clé API (lecture + écriture)
-const API_KEY = "e8637941-78b4-4064-b07bfd35385a-b1c2-4aaa"; // ← METS TA VRAIE CLÉ ICI !
+// Password = Clé API
+const API_KEY = "e0d3b676-75f2-437c-a032ac4238e1-8325-48c1";
 
 // Années fixes
 const fixedYears = [2020, 2021, 2022, 2023, 2024, 2025];
 
 
 /* ===========================
-    TIMELINE
+   TIMELINE
 =========================== */
 
 function renderYearMenu(active) {
@@ -38,7 +38,7 @@ function renderYearMenu(active) {
 =========================== */
 
 async function listFilesAPI(folderPath) {
-    const url = `${STORAGE_API}/${folderPath}`;
+    const url = `${STORAGE_API}/${folderPath}/`;
 
     const res = await fetch(url, {
         method: "GET",
@@ -51,9 +51,7 @@ async function listFilesAPI(folderPath) {
 
     const files = await res.json();
 
-    return files.items
-        ? files.items.map(f => f.objectName)
-        : [];
+    return files.items ? files.items.map(f => f.objectName) : [];
 }
 
 
@@ -65,32 +63,25 @@ async function loadGallery(year = null) {
     const selectedYear = year || Math.max(...fixedYears);
     renderYearMenu(selectedYear);
 
-    /* ========== MAIN VIDEO ========== */
+    // VIDEO PRINCIPALE
     const mainVideoURL = `https://pierro-videos.b-cdn.net/videos/main/${selectedYear}.MP4`;
-
-    const src = document.getElementById("videoSource");
-    src.src = mainVideoURL;
+    document.getElementById("videoSource").src = mainVideoURL;
     document.getElementById("mainVideo").load();
 
     const gallery = document.getElementById("gallery");
     gallery.innerHTML = "";
 
-    /* ========== IMAGES ========== */
+    // IMAGES
     const images = await listFilesAPI(`photos/${selectedYear}`);
-
     images.forEach(filename => {
         const div = document.createElement("div");
         div.className = "item";
-
-        div.innerHTML = `
-            <img src="${STORAGE_CDN}/photos/${selectedYear}/${filename}" />
-        `;
+        div.innerHTML = `<img src="${STORAGE_CDN}/photos/${selectedYear}/${filename}" />`;
         gallery.appendChild(div);
     });
 
-    /* ========== VIDEOS UTILISATEURS ========== */
+    // VIDEOS UTILISATEURS
     const videos = await listFilesAPI(`videos/user/${selectedYear}`);
-
     videos.forEach(filename => {
         const div = document.createElement("div");
         div.className = "item";
@@ -111,22 +102,20 @@ async function loadGallery(year = null) {
 
 async function uploadFiles() {
     const year = document.getElementById("yearInput").value;
-    if (!year) return alert("Choisir une année.");
-
     const files = document.getElementById("fileInput").files;
+
+    if (!year) return alert("Choisir une année.");
     if (!files.length) return alert("Choisir un fichier.");
 
     for (const file of files) {
 
-        let uploadPath = "";
+        let uploadPath = file.type.startsWith("image")
+            ? `photos/${year}/${file.name}`
+            : file.type.startsWith("video")
+                ? `videos/user/${year}/${file.name}`
+                : null;
 
-        if (file.type.startsWith("image")) {
-            uploadPath = `photos/${year}/${file.name}`;
-        } else if (file.type.startsWith("video")) {
-            uploadPath = `videos/user/${year}/${file.name}`;
-        } else {
-            continue;
-        }
+        if (!uploadPath) continue;
 
         await fetch(`${STORAGE_API}/${uploadPath}`, {
             method: "PUT",
@@ -150,14 +139,10 @@ async function uploadFiles() {
 function openPopup() {
     document.getElementById("popup").style.display = "flex";
 }
-
 function closePopup() {
     document.getElementById("popup").style.display = "none";
 }
 
 
-/* ===========================
-   START
-=========================== */
-
+// START
 loadGallery();
