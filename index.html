@@ -296,62 +296,8 @@
     </div>
 </div>
 
-<script>
-
-function openPopup() {
-    document.getElementById("popup").style.display = "flex";
-}
-
-function closePopup() {
-    document.getElementById("popup").style.display = "none";
-}
-
-document.getElementById("fileInput").addEventListener("change", () => {
-    const f = document.getElementById("fileInput").files;
-    document.getElementById("file-chosen").textContent =
-        f.length === 0 ? "Aucun fichier choisi" : `${f.length} fichier(s) sélectionné(s)`;
-});
-
-/* ---------------------- TIMELINE + VIDEO ---------------------- */
-const yearsMenu = document.getElementById("years-menu");
-
-const years = [2020, 2021, 2022, 2023, 2024, 2025];
-
-years.forEach(year => {
-    const btn = document.createElement("div");
-    btn.textContent = year;
-    btn.className = "year-btn";
-    btn.onclick = () => selectYear(year);
-    yearsMenu.appendChild(btn);
-});
-
-const params = new URLSearchParams(window.location.search);
-let selectedYear = params.get("year") || 2025;
-
-function loadMainVideo() {
-    const videoURL = `https://pierro-videos.b-cdn.net/videos/main/${selectedYear}.MP4`;
-    document.getElementById("videoSource").src = videoURL;
-    document.getElementById("mainVideo").load();
-}
-
-function selectYear(year) {
-    selectedYear = year;
-
-    document.querySelectorAll(".year-btn").forEach(btn => {
-        btn.classList.toggle("active", btn.textContent == year);
-    });
-
-    history.replaceState(null, "", `?year=${year}`);
-
-    loadMainVideo();
-    loadGallery(selectedYear);
-}
-
-selectYear(selectedYear);
-loadGallery(selectedYear);
-</script>
-
-<script src="upload.js"></script>
+<!-- SCRIPT PRINCIPAL (versioning pour recharger) -->
+<script src="upload.js?v=3"></script>
 
 </body>
 </html>
