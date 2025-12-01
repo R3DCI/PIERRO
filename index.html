@@ -277,7 +277,8 @@ function highlightYear(y) {
    MAIN VIDEO
 ============================ */
 function loadMainVideo(y) {
-    document.getElementById("videoSource").src = `https://pierro-videos.b-cdn.net/main/${y}.mp4`;
+    const videoUrl = `https://pierro-storage.b-cdn.net/videos/main/${y}.mp4`;
+    document.getElementById("videoSource").src = videoUrl;
     document.getElementById("mainVideo").load();
 }
 
