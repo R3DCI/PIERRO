@@ -9,13 +9,12 @@ export const config = {
   api: { bodyParser: false }
 };
 
-// Bunny Storage Config
-const STORAGE_ZONE = "pierro-storage"; // ta zone pour les photos
+// ===== CONFIG BUNNY =====
+const STORAGE_ZONE = "pierro-storage";
 const API_KEY = process.env.BUNNY_API_KEY;
 const BASE_URL = `https://storage.bunnycdn.com/${STORAGE_ZONE}`;
 
-
-// ========== UPLOAD DIRECT BUNNY ==========
+// ===== Envoi direct sur Bunny =====
 async function bunnyUpload(path, buffer) {
   const res = await fetch(`${BASE_URL}/${path}`, {
     method: "PUT",
@@ -27,43 +26,45 @@ async function bunnyUpload(path, buffer) {
   });
 
   if (!res.ok) {
-    console.log("UPLOAD ERROR :", await res.text());
+    console.log("BUNNY ERROR:", await res.text());
     throw new Error("Erreur Bunny Storage");
   }
 }
 
-
-// ========== MAIN ==========
+// =======================================================
+//   MAIN HANDLER
+// =======================================================
 export default async function handler(req) {
   try {
     if (req.method !== "POST") {
-      return NextResponse.json({ error: "Méthode non autorisée" }, { status: 405 });
+      return NextResponse.json({ error: "Méthode interdite" }, { status: 405 });
     }
 
+    // Lecture du formulaire
     const form = await req.formData();
 
-    const name = form.get("name");
-    const message = form.get("message");
-    const year = form.get("year");
+    const name = form.get("name")?.trim();
+    const message = form.get("message")?.trim();
+    const year = form.get("year")?.trim();
     const files = form.getAll("files");
 
     if (!name || !message || !year) {
-      return NextResponse.json({ error: "Champs requis manquants" }, { status: 400 });
+      return NextResponse.json({ error: "Champs manquants" }, { status: 400 });
     }
 
     if (!files || files.length === 0) {
       return NextResponse.json({ error: "Aucun fichier reçu" }, { status: 400 });
     }
 
-    // ===== ID unique du post =====
-    const postId = crypto.randomBytes(6).toString("hex");
+    // ID unique du post
+    const postId = crypto.randomBytes(5).toString("hex");
 
-    // ===== Chemin dossier =====
+    // Exemple : visitors/2025/abc123/
     const basePath = `visitors/${year}/${postId}`;
 
-    // ===== Upload des fichiers =====
     const fileList = [];
 
+    // Upload chaque fichier
     for (let i = 0; i < files.length; i++) {
       const f = files[i];
       const buffer = Buffer.from(await f.arrayBuffer());
@@ -75,7 +76,7 @@ export default async function handler(req) {
       fileList.push(remoteName);
     }
 
-    // ===== meta.json =====
+    // Création du meta.json
     const meta = {
       name,
       message,
@@ -88,13 +89,13 @@ export default async function handler(req) {
 
     return NextResponse.json({
       success: true,
-      message: "Souvenir envoyé",
-      postId: postId,
-      year: year
+      message: "Souvenir ajouté",
+      postId,
+      year
     });
 
   } catch (err) {
-    console.log("UPLOAD VISITORS SERVER ERROR :", err);
+    console.log("UPLOAD VISITORS SERVER ERROR:", err);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
   }
 }
