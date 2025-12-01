@@ -6,5 +6,7 @@ export default async function handler(req) {
 
   const { blobs } = await list({ prefix });
 
-  return NextResponse.json(blobs.map(b => b.url));
+  const urls = blobs.map(b => b.url);
+
+  return NextResponse.json(urls);
 }
