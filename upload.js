@@ -2,13 +2,11 @@
       CONFIG VERCEL BLOB
 =========================== */
 
-async function uploadToBlob(file, year) {
-    const filename = `${year}/${Date.now()}-${file.name}`;
-    
+async function uploadToBlob(file, fullPath) {
     const res = await fetch("/api/upload", {
         method: "POST",
         headers: {
-            "x-file-name": filename
+            "x-file-name": fullPath
         },
         body: file
     });
@@ -39,15 +37,12 @@ function renderYearMenu(active) {
 
 
 /* ===========================
-       LIST FILES BLOB API
+     LIST FILES (Vercel Blob)
 =========================== */
 
 async function listBlobFiles(prefix) {
-    const url = `/api/list?prefix=${encodeURIComponent(prefix)}`;
-
-    const res = await fetch(url);
+    const res = await fetch(`/api/list?prefix=${encodeURIComponent(prefix)}`);
     if (!res.ok) return [];
-
     return await res.json();
 }
 
@@ -60,23 +55,35 @@ async function loadGallery(year = null) {
     const selectedYear = year || Math.max(...fixedYears);
     renderYearMenu(selectedYear);
 
+    /* ===============================
+           VIDÉO PRINCIPALE
+       =============================== */
+
+    const mainVideoURL = `https://blob.vercel-storage.com/main/${selectedYear}.mp4`;
+
+    document.getElementById("videoSource").src = mainVideoURL;
+    document.getElementById("mainVideo").load();
+
+    /* ===============================
+           GALERIE DES VISITEURS
+       =============================== */
+
     const gallery = document.getElementById("gallery");
     gallery.innerHTML = "";
 
-    /* ====== PHOTO & VIDEO LISTE ====== */
+    const files = await listBlobFiles(`${selectedYear}/`);
 
-    const allFiles = await listBlobFiles(`${selectedYear}/`);
-
-    allFiles.forEach(url => {
+    files.forEach(url => {
         const div = document.createElement("div");
         div.className = "item";
 
         if (url.match(/\.(jpg|jpeg|png|webp|gif)$/i)) {
-            div.innerHTML = `<img src="${url}" />`;
-        } else if (url.match(/\.(mp4|mov|webm|mkv)$/i)) {
+            div.innerHTML = `<img src="${url}">`;
+        }
+        else if (url.match(/\.(mp4|mov|webm|mkv)$/i)) {
             div.innerHTML = `
                 <video controls>
-                    <source src="${url}" type="video/mp4" />
+                    <source src="${url}" type="video/mp4">
                 </video>
             `;
         }
@@ -98,7 +105,8 @@ async function uploadFiles() {
     if (!files.length) return alert("Choisir un fichier.");
 
     for (const file of files) {
-        await uploadToBlob(file, year);
+        const path = `${year}/${Date.now()}-${file.name}`;
+        await uploadToBlob(file, path);
     }
 
     closePopup();
@@ -120,7 +128,7 @@ function closePopup() {
 
 
 /* ===========================
-            START
+             START
 =========================== */
 
 loadGallery();
