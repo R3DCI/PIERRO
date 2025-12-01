@@ -76,7 +76,7 @@ async function loadGallery(year = null) {
     gallery.innerHTML = "";
 
     /* ========== IMAGES ========== */
-    const images = await listFilesAPI(`photos/${selectedYear}/`);
+    const images = await listFilesAPI(`photos/${selectedYear}`);
 
     images.forEach(filename => {
         const div = document.createElement("div");
@@ -89,7 +89,7 @@ async function loadGallery(year = null) {
     });
 
     /* ========== VIDEOS UTILISATEURS ========== */
-    const videos = await listFilesAPI(`videos/user/${selectedYear}/`);
+    const videos = await listFilesAPI(`videos/user/${selectedYear}`);
 
     videos.forEach(filename => {
         const div = document.createElement("div");
