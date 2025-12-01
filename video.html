@@ -8,55 +8,35 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
-    body {
-        margin: 0;
-        background: #FAF8F4;
-        font-family: 'Playfair Display', serif;
-        color: #4A3F35;
-        text-align: center;
-        padding: 25px 10px;
-    }
-
-    h1 {
-        font-size: 2.2rem;
-        margin-bottom: 20px;
-        text-shadow: 0 0 6px rgba(174,139,105,0.35);
-        animation: fadeDown .7s ease-out;
-    }
-
-    @keyframes fadeDown {
-        from { opacity: 0; transform: translateY(-12px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
-
-    video {
-        width: 92%;
-        max-width: 750px;
-        border-radius: 16px;
-        box-shadow: 0 6px 22px rgba(0,0,0,0.22);
-        background: black;
-        animation: fadeIn .8s ease-out;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to   { opacity: 1; }
-    }
-
-    a {
-        display: inline-block;
-        margin-top: 28px;
-        font-size: 1.25rem;
-        color: #4A3F35;
-        text-decoration: none;
-        border-bottom: 2px solid #4A3F35;
-        padding-bottom: 4px;
-        transition: .2s;
-    }
-
-    a:hover {
-        opacity: .7;
-    }
+body {
+    margin: 0;
+    background: #FAF8F4;
+    font-family: 'Playfair Display', serif;
+    color: #4A3F35;
+    text-align: center;
+    padding: 25px 10px;
+}
+h1 {
+    font-size: 2.2rem;
+    margin-bottom: 20px;
+    text-shadow: 0 0 6px rgba(174,139,105,0.35);
+}
+video {
+    width: 92%;
+    max-width: 750px;
+    border-radius: 16px;
+    box-shadow: 0 6px 22px rgba(0,0,0,0.22);
+    background: black;
+}
+a {
+    display: inline-block;
+    margin-top: 28px;
+    font-size: 1.25rem;
+    color: #4A3F35;
+    text-decoration: none;
+    border-bottom: 2px solid #4A3F35;
+    padding-bottom: 4px;
+}
 </style>
 </head>
 
@@ -65,7 +45,7 @@
 <h1>Vidéo souvenir</h1>
 
 <video id="player" controls autoplay playsinline>
-    <source id="videoSource" src="" type="">
+    <source id="videoSource" src="" type="video/mp4">
 </video>
 
 <a href="index.html">← Retour</a>
@@ -74,16 +54,7 @@
     const url = new URLSearchParams(window.location.search).get("url");
 
     if (url) {
-        const source = document.getElementById("videoSource");
-
-        // Détection du type de fichier
-        if (url.includes(".m3u8")) {
-            source.type = "application/x-mpegURL";
-        } else {
-            source.type = "video/mp4";
-        }
-
-        source.src = url;
+        document.getElementById("videoSource").src = url;
         document.getElementById("player").load();
     }
 </script>
