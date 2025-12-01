@@ -8,6 +8,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet" />
 
 <style>
+/* ———————————————————————————————————
+   TOUT ton CSS est parfait, on ne touche à rien
+——————————————————————————————————— */
     body {
         margin: 0;
         font-family: 'Playfair Display', serif;
@@ -16,7 +19,6 @@
         text-align: center;
         overflow-x: hidden;
     }
-
     h1 {
         margin: 18px 0 4px !important;
         font-size: 2.6rem;
@@ -24,12 +26,10 @@
         text-shadow: 0 0 6px rgba(174,139,105,0.35);
         animation: fadeDown .8s ease-out;
     }
-
     @keyframes fadeDown {
         from { opacity: 0; transform: translateY(-12px); }
         to   { opacity: 1; transform: translateY(0); }
     }
-
     .subtitle {
         opacity: .75;
         font-size: 1.05rem;
@@ -37,8 +37,6 @@
         padding: 0 20px;
         animation: fadeDown 1s ease-out;
     }
-
-    /* ---------- TIMELINE ---------- */
     #years-menu {
         display: flex;
         justify-content: center;
@@ -51,22 +49,18 @@
         position: relative;
         z-index: 10;
     }
-
     .year-btn {
         cursor: pointer;
         opacity: .55;
         transition: .25s;
         padding: 4px 0;
     }
-
     .year-btn:hover { opacity: 1; }
-
     .year-btn.active {
         opacity: 1;
         font-weight: 700;
         color: #4A3F35;
     }
-
     .year-btn.active::after {
         content: "";
         display: block;
@@ -76,8 +70,6 @@
         margin-top: 4px;
         border-radius: 2px;
     }
-
-    /* ---------- VIDEO ---------- */
     .main-video {
         width: 90%;
         max-width: 600px;
@@ -86,13 +78,10 @@
         margin-top: 10px !important;
         animation: fadeIn .9s ease-out;
     }
-
     @keyframes fadeIn {
         from { opacity: 0; }
         to   { opacity: 1; }
     }
-
-    /* ---------- GALERIE ---------- */
     .section-title {
         text-align: left;
         width: 90%;
@@ -102,14 +91,12 @@
         border-left: 4px solid #4A3F35;
         padding-left: 10px;
     }
-
     #gallery {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(160px,1fr));
         gap: 14px;
         padding: 10px 20px 140px;
     }
-
     .item {
         background: white;
         border-radius: 12px;
@@ -119,15 +106,11 @@
         transform: translateY(14px);
         animation: fadeUp .7s ease forwards;
     }
-
     @keyframes fadeUp {
         from { opacity: 0; transform: translateY(14px); }
         to   { opacity: 1; transform: translateY(0); }
     }
-
     .item img, .item video { width: 100%; display: block; }
-
-    /* ---------- BOUTON + ---------- */
     #upload-btn {
         position: fixed;
         bottom: 22px;
@@ -144,15 +127,11 @@
         z-index: 3000;
         animation: pulse 2.2s infinite ease-in-out;
     }
-
     @keyframes pulse {
         0% { transform: scale(1); }
         50% { transform: scale(1.06); }
         100% { transform: scale(1); }
     }
-
-    /* ---------- POPUP PREMIUM ---------- */
-
     #popup {
         position: fixed;
         inset: 0;
@@ -163,7 +142,6 @@
         align-items: center;
         z-index: 5000;
     }
-
     #popup-box {
         background: #FFF8F0;
         width: 88%;
@@ -174,14 +152,12 @@
         box-shadow: 0 15px 30px rgba(0,0,0,0.25);
         text-align: center;
     }
-
     #popup-box h2 {
         margin: 0 0 20px;
         color: #5E4A3A;
         font-size: 1.7rem;
         font-weight: 700;
     }
-
     .popup-field {
         width: 100%;
         padding: 12px;
@@ -193,7 +169,6 @@
         background: white;
         color: #4A3F35;
     }
-
     #fileLabel {
         display: block;
         background: #E8DCCF;
@@ -205,19 +180,15 @@
         transition: .2s;
         font-size: 1rem;
     }
-
     #fileLabel:hover {
         background: #E2D2C1;
     }
-
     #fileInput { display: none; }
-
     #file-chosen {
         font-size: .9rem;
         color: #4A3F35;
         margin-bottom: 16px;
     }
-
     .btn-gold {
         width: 100%;
         padding: 14px;
@@ -232,11 +203,9 @@
         box-shadow: 0 6px 14px rgba(0,0,0,0.25);
         transition: .25s;
     }
-
     .btn-gold:hover {
         transform: translateY(-2px);
     }
-
     .btn-clear {
         background: transparent;
         border: none;
@@ -245,7 +214,6 @@
         font-weight: 600;
         cursor: pointer;
     }
-
     @keyframes popIn {
         from { opacity: 0; transform: scale(.92); }
         to   { opacity: 1; transform: scale(1); }
@@ -258,22 +226,17 @@
 <h1>Notre deuxième maison</h1>
 <div class="subtitle">Souvenirs, images, vidéos… organisés par année.</div>
 
-<!-- TIMELINE -->
 <div id="years-menu"></div>
 
-<!-- VIDEO PRINCIPALE -->
 <video id="mainVideo" class="main-video" controls>
     <source id="videoSource" src="" type="video/mp4" />
 </video>
 
-<!-- GALERIE -->
 <div class="section-title">Souvenirs</div>
 <div id="gallery"></div>
 
-<!-- BOUTON AJOUT -->
 <button id="upload-btn" onclick="openPopup()">+</button>
 
-<!-- POPUP -->
 <div id="popup">
     <div id="popup-box">
         <h2>Ajouter un souvenir</h2>
@@ -296,8 +259,8 @@
     </div>
 </div>
 
-<!-- SCRIPT PRINCIPAL (versioning pour recharger) -->
-<script src="upload.js?v=3"></script>
+<!-- SCRIPT CORRIGÉ, versioning pour forcer rechargement -->
+<script src="upload.js?v=10"></script>
 
 </body>
 </html>
