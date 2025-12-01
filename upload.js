@@ -2,17 +2,17 @@
         CONFIG BUNNY STORAGE
 =========================== */
 
-// CDN pour les PHOTOS (pull zone : pierro-cdn)
+// CDN pour les photos
 const STORAGE_CDN = "https://pierro-cdn.b-cdn.net";
 
-// CDN pour les VIDEOS (pull zone : pierro-videos)
+// CDN pour les vidéos
 const VIDEO_CDN = "https://pierro-videos.b-cdn.net";
 
-// Endpoint API Bunny Storage avec TON vrai Storage Zone ID
-const STORAGE_API = "https://storage.bunnycdn.com/1277988";
+// API Bunny Storage
+const STORAGE_API = "https://storage.bunnycdn.com/pierro-storage";
 
-// Clé Password (lecture + écriture) de la zone
-const API_KEY = "e0d3b676-75f2-437c-a032ac4238e1-8325-48c1";
+// NOUVEAU PASSWORD (clé API descendante)
+const API_KEY = "c5dc0d4b-0100-473b-88729446369f-9a9a-40fc";
 
 
 /* ===========================
@@ -36,7 +36,7 @@ function renderYearMenu(active) {
 
 
 /* ===========================
-     LIST FILES VIA API
+     LIST FILES (API STORAGE)
 =========================== */
 
 async function listFilesAPI(folderPath) {
@@ -51,8 +51,8 @@ async function listFilesAPI(folderPath) {
 
     if (!res.ok) return [];
 
-    const data = await res.json();
-    return data.items ? data.items.map(f => f.objectName) : [];
+    const files = await res.json();
+    return files.items ? files.items.map(f => f.objectName) : [];
 }
 
 
@@ -72,21 +72,19 @@ async function loadGallery(year = null) {
     const gallery = document.getElementById("gallery");
     gallery.innerHTML = "";
 
-    // PHOTOS
+    // IMAGES
     const images = await listFilesAPI(`photos/${selectedYear}`);
-
     images.forEach(filename => {
         const div = document.createElement("div");
         div.className = "item";
         div.innerHTML = `
-            <img src="${STORAGE_CDN}/photos/${selectedYear}/${filename}" />
+            <img src="${STORAGE_CDN}/photos/${selectedYear}/${filename}">
         `;
         gallery.appendChild(div);
     });
 
     // VIDEOS UTILISATEURS
     const videos = await listFilesAPI(`videos/user/${selectedYear}`);
-
     videos.forEach(filename => {
         const div = document.createElement("div");
         div.className = "item";
@@ -112,15 +110,13 @@ async function uploadFiles() {
     if (!files.length) return alert("Choisir un fichier.");
 
     for (const file of files) {
+        let uploadPath = "";
 
-        let uploadPath =
-            file.type.startsWith("image")
-                ? `photos/${year}/${file.name}`
-                : file.type.startsWith("video")
-                ? `videos/user/${year}/${file.name}`
-                : null;
-
-        if (!uploadPath) continue;
+        if (file.type.startsWith("image")) {
+            uploadPath = `photos/${year}/${file.name}`;
+        } else if (file.type.startsWith("video")) {
+            uploadPath = `videos/user/${year}/${file.name}`;
+        } else continue;
 
         await fetch(`${STORAGE_API}/${uploadPath}`, {
             method: "PUT",
@@ -150,5 +146,8 @@ function closePopup() {
 }
 
 
-// START
+/* ===========================
+             START
+=========================== */
+
 loadGallery();
