@@ -87,7 +87,7 @@ h1 {
 }
 
 /* -----------------------------------------
-   INSTAGRAM POSTS
+   POSTS
 ------------------------------------------*/
 .post {
     width: 92%;
@@ -98,16 +98,12 @@ h1 {
     box-shadow: 0 5px 18px rgba(0,0,0,0.12);
     overflow: hidden;
 }
-
-/* HEADER (nom + année) */
 .post-header {
     text-align: left;
     padding: 14px 18px 4px;
     font-size: 1.2rem;
     font-weight: 600;
 }
-
-/* MESSAGE */
 .post-message {
     text-align: left;
     padding: 0 18px 14px;
@@ -152,9 +148,7 @@ h1 {
     background: #4A3F35;
 }
 
-/* -----------------------------------------
-   FLOATING BUTTON
-------------------------------------------*/
+/* FLOAT BUTTON */
 #visitor-floating-btn {
     position: fixed;
     bottom: 22px;
@@ -170,9 +164,7 @@ h1 {
     z-index: 3000;
 }
 
-/* -----------------------------------------
-   POPUP VISITEUR
-------------------------------------------*/
+/* POPUP */
 #visitor-popup {
     position: fixed;
     inset: 0;
@@ -206,8 +198,6 @@ h1 {
     cursor: pointer;
     margin-bottom: 14px;
 }
-
-/* status */
 #visitor-status {
     margin-top: 10px;
     color: #A33;
@@ -223,6 +213,7 @@ h1 {
 
 <div id="years-menu"></div>
 
+<!-- MAIN VIDEO -->
 <video id="mainVideo" class="main-video" controls>
     <source id="videoSource" src="" type="video/mp4" />
 </video>
@@ -230,10 +221,10 @@ h1 {
 <div class="section-title">Souvenirs</div>
 <div id="gallery"></div>
 
-<!-- BOUTON FLOTTANT AJOUT -->
+<!-- FLOATING BUTTON -->
 <button id="visitor-floating-btn" onclick="openVisitorPopup()">✚</button>
 
-<!-- POPUP VISITEURS -->
+<!-- POPUP -->
 <div id="visitor-popup">
     <div id="visitor-box">
         <h2>Partager un souvenir</h2>
@@ -241,13 +232,16 @@ h1 {
         <textarea id="visitor-message" class="visitor-field" rows="2" placeholder="Votre message *"></textarea>
         <select id="visitor-year" class="visitor-field">
             <option disabled selected>Choisissez l'année *</option>
-            <option>2020</option><option>2021</option><option>2022</option>
-            <option>2023</option><option>2024</option><option>2025</option>
+            <option>2020</option>
+            <option>2021</option>
+            <option>2022</option>
+            <option>2023</option>
+            <option>2024</option>
+            <option>2025</option>
         </select>
 
         <label id="visitor-fileLabel" for="visitor-files">📁 Choisir des photos / vidéos</label>
         <input type="file" id="visitor-files" accept="image/*,video/*" multiple style="display:none;" />
-
         <div id="visitor-file-count">Aucun fichier sélectionné</div>
 
         <button id="visitor-send-btn" onclick="sendVisitorPost()">Publier</button>
@@ -257,14 +251,11 @@ h1 {
     </div>
 </div>
 
-<!-- -----------------------------------------
-     JS GLOBAL : VIDEOS + INSTAGRAM POSTS
------------------------------------------- -->
 <script>
-// =======================
-// MENU ANNÉES
-// =======================
-const years = [2020,2021,2022,2023,2024,2025];
+/* ============================
+   MENU ANNÉES
+============================ */
+const years = [2020, 2021, 2022, 2023, 2024, 2025];
 const menu = document.getElementById("years-menu");
 
 years.forEach(y => {
@@ -276,53 +267,51 @@ years.forEach(y => {
 });
 
 function highlightYear(y) {
-    document.querySelectorAll(".year-btn").forEach(btn=>{
+    document.querySelectorAll(".year-btn").forEach(btn => {
         btn.classList.remove("active");
         if (btn.innerText == y) btn.classList.add("active");
     });
 }
 
-// =======================
-// MAIN VIDEO
-// =======================
+/* ============================
+   MAIN VIDEO
+============================ */
 function loadMainVideo(y) {
-    document.getElementById("videoSource").src = `main/${y}.mp4`;
+    document.getElementById("videoSource").src = `https://pierro-videos.b-cdn.net/main/${y}.mp4`;
     document.getElementById("mainVideo").load();
 }
 
-// =======================
-// LOAD POSTS (INSTAGRAM STYLE)
-// =======================
-async function loadPosts(y) {
+/* ============================
+   LOAD POSTS (SCAN BUNNY)
+============================ */
+async function loadPosts(year) {
     const gallery = document.getElementById("gallery");
     gallery.innerHTML = "Chargement…";
 
-    let res = await fetch(`https://pierro-cdn.b-cdn.net/${y}/meta.json?t=${Date.now()}`);
+    // Retrieve list of posts from backend
+    const res = await fetch(`/api/list?year=${year}`);
     if (!res.ok) {
         gallery.innerHTML = "Aucun souvenir pour cette année.";
         return;
     }
 
-    let posts = await res.json();
+    const posts = await res.json();
     gallery.innerHTML = "";
 
     posts.forEach(post => {
         const card = document.createElement("div");
         card.className = "post";
 
-        // HEADER
         const h = document.createElement("div");
         h.className = "post-header";
-        h.innerHTML = `${post.name} — ${y}`;
+        h.innerHTML = `${post.name} — ${year}`;
         card.appendChild(h);
 
-        // MESSAGE
         const m = document.createElement("div");
         m.className = "post-message";
         m.innerText = post.message;
         card.appendChild(m);
 
-        // CAROUSEL
         const car = document.createElement("div");
         car.className = "carousel";
 
@@ -333,72 +322,42 @@ async function loadPosts(y) {
             const item = document.createElement("div");
             item.className = "carousel-item";
 
+            const fileUrl = `https://pierro-storage.b-cdn.net/visitors/${year}/${post.id}/${f}`;
+
             if (f.endsWith(".mp4")) {
                 let v = document.createElement("video");
                 v.controls = true;
-                v.src = `https://pierro-cdn.b-cdn.net/${y}/${f}`;
+                v.src = fileUrl;
                 item.appendChild(v);
             } else {
                 let img = document.createElement("img");
-                img.src = `https://pierro-cdn.b-cdn.net/${y}/${f}`;
+                img.src = fileUrl;
                 item.appendChild(img);
             }
+
             inner.appendChild(item);
         });
 
         car.appendChild(inner);
-
-        // DOTS
-        const dots = document.createElement("div");
-        dots.className = "carousel-dots";
-
-        post.files.forEach((f, idx) => {
-            let d = document.createElement("div");
-            d.className = "dot" + (idx === 0 ? " active" : "");
-            dots.appendChild(d);
-        });
-
-        car.appendChild(dots);
         card.appendChild(car);
-
-        // SWIPE CAROUSEL
-        let index = 0;
-        let startX = 0;
-
-        car.addEventListener("touchstart", e => startX = e.touches[0].clientX);
-        car.addEventListener("touchend", e => {
-            let endX = e.changedTouches[0].clientX;
-            if (endX - startX > 40 && index > 0) index--;
-            if (startX - endX > 40 && index < post.files.length - 1) index++;
-            updateCarousel();
-        });
-
-        function updateCarousel() {
-            inner.style.transform = `translateX(-${index * 100}%)`;
-            dots.querySelectorAll(".dot").forEach((d,i)=>{
-                d.classList.toggle("active", i === index);
-            });
-        }
-
         gallery.appendChild(card);
     });
 }
 
-// =======================
-// SELECT YEAR
-// =======================
+/* ============================
+   SELECT YEAR
+============================ */
 function selectYear(y) {
     highlightYear(y);
     loadMainVideo(y);
     loadPosts(y);
 }
 
-// AUTOLOAD 2025
 selectYear(2025);
 
-// =======================
-// VISITOR FORM
-// =======================
+/* ============================
+   POPUP + UPLOAD
+============================ */
 function openVisitorPopup() {
     document.getElementById("visitor-popup").style.display = "flex";
 }
@@ -411,6 +370,7 @@ document.getElementById("visitor-files").addEventListener("change", () => {
     document.getElementById("visitor-file-count").innerText =
         f.length ? `${f.length} fichier(s)` : "Aucun fichier sélectionné";
 });
+
 async function sendVisitorPost() {
     const name = document.getElementById("visitor-name").value.trim();
     const message = document.getElementById("visitor-message").value.trim();
