@@ -12,7 +12,12 @@ export default async function handler(req) {
     return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
   }
 
-  const blob = await put(req.headers.get("x-file-name"), req.body, {
+  const filename = req.headers.get("x-file-name");
+  if (!filename) {
+    return NextResponse.json({ error: "Missing filename" }, { status: 400 });
+  }
+
+  const blob = await put(filename, req.body, {
     access: "public",
   });
 
