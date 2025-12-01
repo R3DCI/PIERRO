@@ -1,5 +1,5 @@
 /* ===========================
-   CONFIG BUNNY STORAGE
+        CONFIG BUNNY STORAGE
 =========================== */
 
 // CDN pour AFFICHER les photos
@@ -8,15 +8,15 @@ const STORAGE_CDN = "https://pierro-cdn.b-cdn.net";
 // CDN pour AFFICHER les vidéos
 const VIDEO_CDN = "https://pierro-videos.b-cdn.net";
 
-// Storage origin pour LISTER & UPLOAD via API
-const STORAGE_API = "https://storage.bunnycdn.com/pierro-storage";
+// Storage origin pour LISTER & UPLOAD via API (⚠️ ID Storage Zone = 1277988)
+const STORAGE_API = "https://storage.bunnycdn.com/1277988";
 
-// Clé API (lecture + écriture)
-const API_KEY = "e0d3b676-75f2-437c-a032ac4238e1-8325-48c1"; 
+// Clé API (lecture + écriture) — Password du Storage Zone
+const API_KEY = "e0d3b676-75f2-437c-a032ac4238e1-8325-48c1";
 
 
 /* ===========================
-   TIMELINE
+          TIMELINE
 =========================== */
 
 const fixedYears = [2020, 2021, 2022, 2023, 2024, 2025];
@@ -36,7 +36,7 @@ function renderYearMenu(active) {
 
 
 /* ===========================
-   LIST FILES (API STORAGE)
+     LIST FILES (API STORAGE)
 =========================== */
 
 async function listFilesAPI(folderPath) {
@@ -60,16 +60,18 @@ async function listFilesAPI(folderPath) {
 
 
 /* ===========================
-   LOAD GALLERY
+          LOAD GALLERY
 =========================== */
 
 async function loadGallery(year = null) {
     const selectedYear = year || Math.max(...fixedYears);
     renderYearMenu(selectedYear);
 
-    /* ========== MAIN VIDEO ========== */
+    /* ========== VIDEO PRINCIPALE ========== */
     const mainVideoURL = `${VIDEO_CDN}/videos/main/${selectedYear}.MP4`;
-    document.getElementById("videoSource").src = mainVideoURL;
+
+    const src = document.getElementById("videoSource");
+    src.src = mainVideoURL;
     document.getElementById("mainVideo").load();
 
     const gallery = document.getElementById("gallery");
@@ -79,30 +81,34 @@ async function loadGallery(year = null) {
     const images = await listFilesAPI(`photos/${selectedYear}`);
 
     images.forEach(filename => {
-        gallery.innerHTML += `
-            <div class="item">
-                <img src="${STORAGE_CDN}/photos/${selectedYear}/${filename}" />
-            </div>
+        const div = document.createElement("div");
+        div.className = "item";
+
+        div.innerHTML = `
+            <img src="${STORAGE_CDN}/photos/${selectedYear}/${filename}" />
         `;
+        gallery.appendChild(div);
     });
 
     /* ========== VIDEOS UTILISATEURS ========== */
     const videos = await listFilesAPI(`videos/user/${selectedYear}`);
 
     videos.forEach(filename => {
-        gallery.innerHTML += `
-            <div class="item">
-                <video controls>
-                    <source src="${VIDEO_CDN}/videos/user/${selectedYear}/${filename}" type="video/mp4">
-                </video>
-            </div>
+        const div = document.createElement("div");
+        div.className = "item";
+
+        div.innerHTML = `
+            <video controls>
+                <source src="${VIDEO_CDN}/videos/user/${selectedYear}/${filename}" type="video/mp4">
+            </video>
         `;
+        gallery.appendChild(div);
     });
 }
 
 
 /* ===========================
-   UPLOAD
+             UPLOAD
 =========================== */
 
 async function uploadFiles() {
@@ -113,7 +119,6 @@ async function uploadFiles() {
     if (!files.length) return alert("Choisir un fichier.");
 
     for (const file of files) {
-
         let uploadPath = "";
 
         if (file.type.startsWith("image")) {
@@ -140,7 +145,7 @@ async function uploadFiles() {
 
 
 /* ===========================
-   POPUP
+             POPUP
 =========================== */
 
 function openPopup() {
@@ -153,7 +158,7 @@ function closePopup() {
 
 
 /* ===========================
-   START
+             START
 =========================== */
 
 loadGallery();
