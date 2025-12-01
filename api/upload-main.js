@@ -9,7 +9,7 @@ export const config = {
 };
 
 // ====== CONFIG BUNNY ======
-const STORAGE_ZONE = "pierro-videos"; // ta zone vidéos
+const STORAGE_ZONE = "pierro-videos"; 
 const API_KEY = process.env.BUNNY_API_KEY;
 const BASE_URL = `https://storage.bunnycdn.com/${STORAGE_ZONE}`;
 
@@ -23,9 +23,16 @@ export default async function handler(req) {
     }
 
     const filename = `${year}.mp4`;
-    const remotePath = `videos/main/${filename}`;
 
-    // ====== Lecture du fichier envoyé ======
+    // ===== IMPORTANT =====
+    // La structure validée pour ton site est :
+    // pierro-videos /
+    //      main /
+    //         2025.mp4
+    // ======================
+    const remotePath = `main/${filename}`;
+
+    // ====== Lecture du fichier ======
     const chunks = [];
     for await (const c of req) chunks.push(c);
     const buffer = Buffer.concat(chunks);
@@ -43,12 +50,13 @@ export default async function handler(req) {
     });
 
     if (!init.ok) {
-      console.log(await init.text());
+      console.log("Erreur INIT :", await init.text());
       return NextResponse.json({ error: "Erreur init upload" }, { status: 500 });
     }
 
-    // ====== 2. ENVOI PAR CHUNKS ======
+    // ====== 2. UPLOAD CHUNK PAR CHUNK ======
     let offset = 0;
+
     while (offset < size) {
       const end = Math.min(offset + CHUNK_SIZE, size);
       const chunk = buffer.slice(offset, end);
@@ -68,7 +76,6 @@ export default async function handler(req) {
         return NextResponse.json({ error: "Erreur upload chunk" }, { status: 500 });
       }
 
-      console.log(`Chunk OK : ${offset} → ${end}`);
       offset = end;
     }
 
@@ -79,14 +86,14 @@ export default async function handler(req) {
     });
 
     if (!done.ok) {
-      console.log(await done.text());
+      console.log("Erreur FINAL :", await done.text());
       return NextResponse.json({ error: "Erreur finalisation" }, { status: 500 });
     }
 
     // ====== OK ======
     return NextResponse.json({
       success: true,
-      url: `https://pierro-videos.b-cdn.net/videos/main/${filename}`
+      url: `https://pierro-videos.b-cdn.net/main/${filename}`
     });
 
   } catch (e) {
