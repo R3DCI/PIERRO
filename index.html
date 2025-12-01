@@ -8,9 +8,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet" />
 
 <style>
-/* ———————————————————————————————————
-   TOUT ton CSS est parfait, on ne touche à rien
-——————————————————————————————————— */
     body {
         margin: 0;
         font-family: 'Playfair Display', serif;
@@ -166,8 +163,6 @@
         margin-bottom: 12px;
         font-size: 1rem;
         font-family: 'Playfair Display', serif;
-        background: white;
-        color: #4A3F35;
     }
     #fileLabel {
         display: block;
@@ -179,9 +174,6 @@
         cursor: pointer;
         transition: .2s;
         font-size: 1rem;
-    }
-    #fileLabel:hover {
-        background: #E2D2C1;
     }
     #fileInput { display: none; }
     #file-chosen {
@@ -202,9 +194,6 @@
         margin-bottom: 10px;
         box-shadow: 0 6px 14px rgba(0,0,0,0.25);
         transition: .25s;
-    }
-    .btn-gold:hover {
-        transform: translateY(-2px);
     }
     .btn-clear {
         background: transparent;
@@ -241,9 +230,6 @@
     <div id="popup-box">
         <h2>Ajouter un souvenir</h2>
 
-        <input id="nameInput" class="popup-field" placeholder="Prénom (optionnel)">
-        <textarea id="messageInput" class="popup-field" placeholder="Petit message (optionnel)" rows="2"></textarea>
-
         <select id="yearInput" class="popup-field">
             <option value="" disabled selected>Choisir l'année</option>
             <option>2020</option><option>2021</option><option>2022</option>
@@ -259,8 +245,7 @@
     </div>
 </div>
 
-<!-- SCRIPT CORRIGÉ, versioning pour forcer rechargement -->
-<script src="upload.js?v=12"></script>
+<script src="upload.js?v=100"></script>
 
 </body>
 </html>
