@@ -1,146 +1,83 @@
-// =======================================================
-//   UPLOAD VISITEURS → BUNNY STORAGE (CHUNK SAFE VERSION)
-// =======================================================
-
-import { NextResponse } from "next/server";
-import crypto from "crypto";
+// ===============================
+//   API UPLOAD VISITORS → BUNNY
+// ===============================
 
 export const config = {
-  api: { bodyParser: false }
+  api: {
+    bodyParser: false,
+  },
 };
 
-// ===== CONFIG BUNNY =====
-const STORAGE_ZONE = "pierro-storage";
-const API_KEY = process.env.BUNNY_API_KEY;
-const BASE_URL = `https://storage.bunnycdn.com/${STORAGE_ZONE}`;
+import formidable from "formidable";
+import fs from "fs";
 
-const CHUNK_SIZE = 5 * 1024 * 1024; // 5 Mo : parfait pour Vercel
+// 🔥 CONFIG BUNNY
+const STORAGE_NAME = "pierro-storage";
+const STORAGE_URL = `https://storage.bunnycdn.com/${STORAGE_NAME}`;
+const STORAGE_KEY = "c5dc0d4b-0100-473b-88729446369f-9a9a-40fc";  // ta clé API
 
+// Upload fichier vers Bunny Storage
+async function uploadToBunny(fullPath, fileBuffer) {
+  const url = `${STORAGE_URL}/${fullPath}`;
 
-// =======================================================
-//   UPLOAD CHUNK SÉCURISÉ POUR BUNNY
-// =======================================================
-async function bunnyUploadChunked(path, buffer) {
-  // ----- 1. INIT -----
-  let init = await fetch(`${BASE_URL}/${path}`, {
+  const res = await fetch(url, {
     method: "PUT",
     headers: {
-      AccessKey: API_KEY,
-      "Content-Type": "application/octet-stream"
-    }
+      "AccessKey": STORAGE_KEY,
+      "Content-Type": "application/octet-stream",
+    },
+    body: fileBuffer,
   });
 
-  if (!init.ok) {
-    console.log("INIT ERROR:", await init.text());
-    throw new Error("Erreur init Bunny");
-  }
-
-  // ----- 2. SEND CHUNKS -----
-  let offset = 0;
-  const size = buffer.length;
-
-  while (offset < size) {
-    const end = Math.min(offset + CHUNK_SIZE, size);
-    const chunk = buffer.slice(offset, end);
-
-    let part = await fetch(`${BASE_URL}/${path}`, {
-      method: "PATCH",
-      headers: {
-        AccessKey: API_KEY,
-        "Content-Type": "application/octet-stream",
-        "Content-Range": `bytes ${offset}-${end - 1}/${size}`
-      },
-      body: chunk
-    });
-
-    if (!part.ok) {
-      console.log("CHUNK ERROR:", await part.text());
-      throw new Error("Erreur chunk Bunny");
-    }
-
-    offset = end;
-  }
-
-  // ----- 3. FINALISATION -----
-  const finish = await fetch(`${BASE_URL}/${path}`, {
-    method: "POST",
-    headers: { AccessKey: API_KEY }
-  });
-
-  if (!finish.ok) {
-    console.log("FINAL ERROR:", await finish.text());
-    throw new Error("Erreur finalisation");
-  }
+  return res.ok;
 }
 
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ success: false, error: "Méthode non autorisée" });
+  }
 
-// =======================================================
-//   MAIN HANDLER
-// =======================================================
-export default async function handler(req) {
-  try {
-    if (req.method !== "POST") {
-      return NextResponse.json({ error: "Méthode interdite" }, { status: 405 });
-    }
+  const form = formidable({ multiples: true });
 
-    // Lecture FormData
-    const form = await req.formData();
+  form.parse(req, async (err, fields, files) => {
+    if (err) return res.status(400).json({ success: false, error: "Erreur parsing" });
 
-    const name = form.get("name")?.trim();
-    const message = form.get("message")?.trim();
-    const year = form.get("year")?.trim();
-    const files = form.getAll("files");
+    const name = fields.name?.trim();
+    const message = fields.message?.trim();
+    const year = fields.year?.trim();
 
-    if (!name || !message || !year) {
-      return NextResponse.json({ error: "Champs requis manquants" }, { status: 400 });
-    }
+    if (!name || !message || !year)
+      return res.status(400).json({ success: false, error: "Champs manquants" });
 
-    if (!files || files.length === 0) {
-      return NextResponse.json({ error: "Aucun fichier reçu" }, { status: 400 });
-    }
+    const id = Date.now().toString();
+    const basePath = `videos/user/${year}/${id}`;
 
-    // ID unique
-    const postId = crypto.randomBytes(6).toString("hex");
-    const basePath = `visitors/${year}/${postId}`;
+    // Liste des fichiers uploadés
+    let uploadedFiles = [];
 
-    let fileList = [];
+    const fileList = Array.isArray(files.files) ? files.files : [files.files];
 
-    // Upload des fichiers
-    for (let i = 0; i < files.length; i++) {
-      const f = files[i];
-      const buffer = Buffer.from(await f.arrayBuffer());
-      const safeName = f.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
-      const remoteName = `file_${i + 1}_${safeName}`;
-      const remotePath = `${basePath}/${remoteName}`;
+    for (const f of fileList) {
+      const fileBuffer = fs.readFileSync(f.filepath);
+      const filePath = `${basePath}/${f.originalFilename}`;
 
-      await bunnyUploadChunked(remotePath, buffer);
-
-      fileList.push(remoteName);
+      const ok = await uploadToBunny(filePath, fileBuffer);
+      if (ok) uploadedFiles.push(f.originalFilename);
     }
 
     // meta.json
     const meta = {
       name,
       message,
-      year,
-      createdAt: Date.now(),
-      files: fileList
+      files: uploadedFiles,
+      timestamp: new Date().toISOString()
     };
 
-    await bunnyUploadChunked(
+    await uploadToBunny(
       `${basePath}/meta.json`,
       Buffer.from(JSON.stringify(meta, null, 2))
     );
 
-    return NextResponse.json({
-      success: true,
-      postId,
-      year,
-      message: "Souvenir ajouté ✔"
-    });
-
-  } catch (err) {
-    console.log("UPLOAD VISITEURS ERROR:", err);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
-  }
+    return res.status(200).json({ success: true });
+  });
 }
