@@ -1,12 +1,12 @@
 /* ===========================
-      CONFIG VERCEL BLOB
+      UPLOAD → BUNNY CDN
 =========================== */
 
-async function uploadToBlob(file, fullPath) {
-    const res = await fetch("/api/upload", {
+async function uploadToBunny(file, fullPath) {
+    const res = await fetch("/api/upload-visitors", {
         method: "POST",
         headers: {
-            "x-file-name": fullPath
+            "x-file-path": fullPath
         },
         body: file
     });
@@ -17,7 +17,7 @@ async function uploadToBlob(file, fullPath) {
 
 
 /* ===========================
-        CONFIG TIMELINE
+      CONFIG TIMELINE
 =========================== */
 
 const fixedYears = [2020, 2021, 2022, 2023, 2024, 2025];
@@ -37,59 +37,59 @@ function renderYearMenu(active) {
 
 
 /* ===========================
-     LIST FILES (Vercel Blob)
+       LIST (BUNNY CDN)
 =========================== */
 
-async function listBlobFiles(prefix) {
-    const res = await fetch(`/api/list?prefix=${encodeURIComponent(prefix)}`);
+async function listBunnyFiles(prefix) {
+    const res = await fetch(`https://pierro-storage.b-cdn.net/${prefix}`);
     if (!res.ok) return [];
-    return await res.json();
+    const html = await res.text();
+    return [...html.matchAll(/href="([^"]+)"/g)].map(m => m[1]);
 }
 
 
 /* ===========================
-          LOAD GALLERY
+         LOAD GALLERY
 =========================== */
 
 async function loadGallery(year = null) {
     const selectedYear = year || Math.max(...fixedYears);
     renderYearMenu(selectedYear);
 
-    /* ===============================
-           VIDÉO PRINCIPALE
-       =============================== */
-
-    const mainVideoURL = `https://blob.vercel-storage.com/main/${selectedYear}.mp4`;
+    const mainVideoURL = `https://pierro-storage.b-cdn.net/videos/main/${selectedYear}.mp4`;
 
     document.getElementById("videoSource").src = mainVideoURL;
     document.getElementById("mainVideo").load();
 
-    /* ===============================
-           GALERIE DES VISITEURS
-       =============================== */
-
     const gallery = document.getElementById("gallery");
     gallery.innerHTML = "";
 
-    const files = await listBlobFiles(`${selectedYear}/`);
+    const base = `videos/user/${selectedYear}/`;
 
-    files.forEach(url => {
+    const folders = await listBunnyFiles(base);
+
+    for (const folder of folders) {
+        const id = folder.replace("/", "");
+        const files = await listBunnyFiles(`${base}${id}/`);
+
         const div = document.createElement("div");
         div.className = "item";
 
-        if (url.match(/\.(jpg|jpeg|png|webp|gif)$/i)) {
-            div.innerHTML = `<img src="${url}">`;
-        }
-        else if (url.match(/\.(mp4|mov|webm|mkv)$/i)) {
-            div.innerHTML = `
-                <video controls>
-                    <source src="${url}" type="video/mp4">
-                </video>
-            `;
-        }
+        files.forEach(file => {
+            const url = `https://pierro-storage.b-cdn.net/${base}${id}/${file}`;
+
+            if (file.match(/\.(jpg|jpeg|png|webp)$/i)) {
+                div.innerHTML += `<img src="${url}">`;
+            } else if (file.match(/\.(mp4|mov|webm)$/i)) {
+                div.innerHTML += `
+                    <video controls>
+                        <source src="${url}" type="video/mp4">
+                    </video>`;
+            }
+        });
 
         gallery.appendChild(div);
-    });
+    }
 }
 
 
@@ -105,14 +105,14 @@ async function uploadFiles() {
     if (!files.length) return alert("Choisir un fichier.");
 
     for (const file of files) {
-        const path = `${year}/${Date.now()}-${file.name}`;
-        await uploadToBlob(file, path);
+        const id = Date.now();
+        const path = `videos/user/${year}/${id}/${file.name}`;
+        await uploadToBunny(file, path);
     }
 
     closePopup();
     loadGallery();
 }
-
 
 /* ===========================
              POPUP
@@ -125,7 +125,6 @@ function openPopup() {
 function closePopup() {
     document.getElementById("popup").style.display = "none";
 }
-
 
 /* ===========================
              START
