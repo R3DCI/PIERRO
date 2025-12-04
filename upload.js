@@ -1,24 +1,21 @@
-/* ===========================
+/* ============================
       UPLOAD → BUNNY CDN
-=========================== */
+============================ */
 
 async function uploadToBunny(file, fullPath) {
     const res = await fetch("/api/upload-visitors", {
         method: "POST",
-        headers: {
-            "x-file-path": fullPath
-        },
+        headers: { "x-file-path": fullPath },
         body: file
     });
-
     const data = await res.json();
     return data.url;
 }
 
 
-/* ===========================
-      CONFIG TIMELINE
-=========================== */
+/* ============================
+        CONFIG TIMELINE
+============================ */
 
 const fixedYears = [2020, 2021, 2022, 2023, 2024, 2025];
 
@@ -28,7 +25,7 @@ function renderYearMenu(active) {
 
     fixedYears.forEach(y => {
         const el = document.createElement("div");
-        el.className = "year-btn" + (y === active ? "active" : "");
+        el.className = "year-btn" + (y === active ? " active" : "");
         el.innerText = y;
         el.onclick = () => loadGallery(y);
         box.appendChild(el);
@@ -36,42 +33,43 @@ function renderYearMenu(active) {
 }
 
 
-/* ===========================
-       LIST (BUNNY CDN)
-=========================== */
+/* ============================
+     LIST FILES (BUNNY CDN)
+============================ */
 
 async function listBunnyFiles(prefix) {
-    const res = await fetch(`https://pierro-storage.b-cdn.net/${prefix}`);
-    if (!res.ok) return [];
-    const html = await res.text();
-    return [...html.matchAll(/href="([^"]+)"/g)].map(m => m[1]);
+    try {
+        const res = await fetch(`https://pierro-storage.b-cdn.net/${prefix}`);
+        if (!res.ok) return [];
+        const html = await res.text();
+        return [...html.matchAll(/href="([^"]+)"/g)].map(m => m[1]);
+    } catch {
+        return [];
+    }
 }
 
 
-/* ===========================
+/* ============================
          LOAD GALLERY
-=========================== */
+============================ */
 
 async function loadGallery(year = null) {
     const selectedYear = year || Math.max(...fixedYears);
     renderYearMenu(selectedYear);
 
-    const mainVideoURL = `https://pierro-storage.b-cdn.net/videos/main/${selectedYear}.mp4`;
-
-    document.getElementById("videoSource").src = mainVideoURL;
+    const videoURL = `https://pierro-storage.b-cdn.net/videos/main/${selectedYear}.mp4`;
+    document.getElementById("videoSource").src = videoURL;
     document.getElementById("mainVideo").load();
 
     const gallery = document.getElementById("gallery");
     gallery.innerHTML = "";
 
     const base = `videos/user/${selectedYear}/`;
-
     const folders = await listBunnyFiles(base);
 
     for (const folder of folders) {
         const id = folder.replace("/", "");
         const files = await listBunnyFiles(`${base}${id}/`);
-
         const div = document.createElement("div");
         div.className = "item";
 
@@ -93,9 +91,9 @@ async function loadGallery(year = null) {
 }
 
 
-/* ===========================
-             UPLOAD
-=========================== */
+/* ============================
+            UPLOAD
+============================ */
 
 async function uploadFiles() {
     const year = document.getElementById("yearInput").value;
@@ -114,9 +112,10 @@ async function uploadFiles() {
     loadGallery();
 }
 
-/* ===========================
-             POPUP
-=========================== */
+
+/* ============================
+            POPUP
+============================ */
 
 function openPopup() {
     document.getElementById("popup").style.display = "flex";
@@ -126,8 +125,9 @@ function closePopup() {
     document.getElementById("popup").style.display = "none";
 }
 
-/* ===========================
-             START
-=========================== */
+
+/* ============================
+            START
+============================ */
 
 loadGallery();
