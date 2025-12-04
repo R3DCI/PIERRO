@@ -1,28 +1,27 @@
-// ===============================
-//   API UPLOAD VISITORS → BUNNY
-// ===============================
+// =============================================
+//  API UPLOAD VISITORS → BUNNYCDN (VERCEL)
+// =============================================
 
 export const config = {
-  api: { bodyParser: false },
+  api: { bodyParser: false }
 };
 
 import formidable from "formidable";
 import fs from "fs";
 
-// CONFIG BUNNY CDN
+// Bunny Storage config
 const STORAGE_NAME = "pierro-storage";
 const STORAGE_URL = `https://storage.bunnycdn.com/${STORAGE_NAME}`;
-const STORAGE_KEY = "c5dc0d4b-0100-473b-88729446369f-9a9a-40fc"; // clé descendante Bunny
+const ACCESS_KEY = process.env.BUNNY_API_KEY; // 🔥 stockée dans Vercel
 
-// Upload un fichier vers Bunny
 async function uploadToBunny(path, buffer) {
   const res = await fetch(`${STORAGE_URL}/${path}`, {
     method: "PUT",
     headers: {
-      AccessKey: STORAGE_KEY,
-      "Content-Type": "application/octet-stream",
+      AccessKey: ACCESS_KEY,
+      "Content-Type": "application/octet-stream"
     },
-    body: buffer,
+    body: buffer
   });
   return res.ok;
 }
@@ -34,8 +33,7 @@ export default function handler(req, res) {
   const form = formidable({ multiples: true });
 
   form.parse(req, async (err, fields, files) => {
-    if (err)
-      return res.status(400).json({ success: false, error: "Erreur parsing" });
+    if (err) return res.status(400).json({ success: false, error: "Erreur parsing" });
 
     const name = fields.name?.trim();
     const message = fields.message?.trim();
@@ -46,27 +44,22 @@ export default function handler(req, res) {
 
     const id = Date.now().toString();
     const basePath = `videos/user/${year}/${id}`;
+    let uploadedFiles = [];
 
-    const uploaded = [];
+    const fileList = Array.isArray(files.files) ? files.files : [files.files];
 
-    const fileArray = Array.isArray(files.files) ? files.files : [files.files];
-
-    for (const f of fileArray) {
-      const fileBuffer = fs.readFileSync(f.filepath);
-      const fileName = f.originalFilename;
-      const filePath = `${basePath}/${fileName}`;
-
-      const ok = await uploadToBunny(filePath, fileBuffer);
-      if (ok) uploaded.push(fileName);
+    for (const f of fileList) {
+      const buffer = fs.readFileSync(f.filepath);
+      const filePath = `${basePath}/${f.originalFilename}`;
+      const ok = await uploadToBunny(filePath, buffer);
+      if (ok) uploadedFiles.push(f.originalFilename);
     }
 
-    // Création du meta.json
     const meta = {
       name,
       message,
-      year,
-      files: uploaded,
-      timestamp: new Date().toISOString(),
+      files: uploadedFiles,
+      timestamp: new Date().toISOString()
     };
 
     await uploadToBunny(
@@ -74,6 +67,6 @@ export default function handler(req, res) {
       Buffer.from(JSON.stringify(meta, null, 2))
     );
 
-    return res.status(200).json({ success: true, id, files: uploaded });
+    return res.status(200).json({ success: true });
   });
 }
