@@ -1,43 +1,177 @@
-<!DOCTYPE html><html lang="fr"><head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Notre deuxième maison</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet" />
 
 <style>
-body{margin:0;font-family:'Playfair Display',serif;background:#FAF8F4;color:#4A3F35;text-align:center;overflow-x:hidden}
-h1{margin:18px 0 4px!important;font-size:2.6rem;font-weight:700;text-shadow:0 0 6px rgba(174,139,105,.35)}
-.subtitle{opacity:.75;font-size:1.05rem;margin-bottom:18px!important;padding:0 20px}
-#years-menu{display:flex;justify-content:center;gap:18px;margin:34px auto 20px!important;padding:10px 0;flex-wrap:wrap;font-size:1.3rem}
-.year-btn{cursor:pointer;opacity:.55;transition:.25s}
-.year-btn.active{opacity:1;font-weight:700}
-.year-btn.active::after{content:"";display:block;height:2px;width:100%;background:#4A3F35;margin-top:4px}
-.main-video{width:90%;max-width:600px;border-radius:14px;box-shadow:0 5px 20px rgba(0,0,0,.18);margin-top:10px!important}
-.section-title{text-align:left;width:90%;margin:35px auto 18px;font-size:1.8rem;font-weight:600;border-left:4px solid #4A3F35;padding-left:10px}
-.post{width:92%;max-width:500px;margin:22px auto;background:#FFF;border-radius:16px;box-shadow:0 5px 18px rgba(0,0,0,.12);overflow:hidden}
-.post-header{text-align:left;padding:14px 18px 4px;font-size:1.2rem;font-weight:600}
-.post-message{text-align:left;padding:0 18px 14px;font-size:1.05rem;opacity:.85}
-.carousel{width:100%;overflow:hidden;background:#000}
-.carousel-inner{display:flex;transition:transform .35s ease}
-.carousel-item{min-width:100%}
-.carousel-item img,.carousel-item video{width:100%;display:block}
-#visitor-floating-btn{position:fixed;bottom:22px;left:22px;background:#4A3F35;color:#fff;border:none;width:65px;height:65px;border-radius:50%;font-size:2.2rem;cursor:pointer;z-index:3000}
-#visitor-popup{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;justify-content:center;align-items:center;z-index:5000;backdrop-filter:blur(6px)}
-#visitor-box{background:#FFF8F0;width:88%;max-width:420px;padding:28px;border-radius:18px;box-shadow:0 15px 30px rgba(0,0,0,.25)}
-.visitor-field{width:100%;padding:12px;border-radius:12px;border:2px solid #E6D7C9;margin-bottom:12px}
-#visitor-fileLabel{display:block;padding:12px;background:#E8DCCF;border-radius:12px;cursor:pointer;margin-bottom:14px}
-#visitor-status{margin-top:10px;color:#A33;font-size:.95rem}
+body {
+    margin: 0;
+    font-family: 'Playfair Display', serif;
+    background: #FAF8F4;
+    color: #4A3F35;
+    text-align: center;
+    overflow-x: hidden;
+}
+h1 {
+    margin: 18px 0 4px !important;
+    font-size: 2.6rem;
+    font-weight: 700;
+    text-shadow: 0 0 6px rgba(174,139,105,0.35);
+}
+.subtitle {
+    opacity: .75;
+    font-size: 1.05rem;
+    margin-bottom: 18px !important;
+    padding: 0 20px;
+}
+#years-menu {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin: 34px auto 20px !important;
+    padding: 10px 0;
+    flex-wrap: wrap;
+    font-size: 1.3rem;
+}
+.year-btn {
+    cursor: pointer;
+    opacity: .55;
+    transition: .25s;
+}
+.year-btn.active {
+    opacity: 1;
+    font-weight: 700;
+}
+.year-btn.active::after {
+    content: "";
+    display: block;
+    height: 2px;
+    width: 100%;
+    background: #4A3F35;
+    margin-top: 4px;
+}
+.main-video {
+    width: 90%;
+    max-width: 600px;
+    border-radius: 14px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.18);
+    margin-top: 10px !important;
+}
+.section-title {
+    text-align: left;
+    width: 90%;
+    margin: 35px auto 18px;
+    font-size: 1.8rem;
+    font-weight: 600;
+    border-left: 4px solid #4A3F35;
+    padding-left: 10px;
+}
+.post {
+    width: 92%;
+    max-width: 500px;
+    margin: 22px auto;
+    background: #FFF;
+    border-radius: 16px;
+    box-shadow: 0 5px 18px rgba(0,0,0,0.12);
+    overflow: hidden;
+}
+.post-header {
+    text-align: left;
+    padding: 14px 18px 4px;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+.post-message {
+    text-align: left;
+    padding: 0 18px 14px;
+    font-size: 1.05rem;
+    opacity: .85;
+}
+.carousel {
+    width: 100%;
+    overflow: hidden;
+    background: #000;
+}
+.carousel-inner {
+    display: flex;
+    transition: transform 0.35s ease;
+}
+.carousel-item {
+    min-width: 100%;
+}
+.carousel-item img,
+.carousel-item video {
+    width: 100%;
+    display: block;
+}
+#visitor-floating-btn {
+    position: fixed;
+    bottom: 22px;
+    left: 22px;
+    background: #4A3F35;
+    color: white;
+    border: none;
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    font-size: 2.2rem;
+    cursor: pointer;
+    z-index: 3000;
+}
+#visitor-popup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 5000;
+    backdrop-filter: blur(6px);
+}
+#visitor-box {
+    background: #FFF8F0;
+    width: 88%;
+    max-width: 420px;
+    padding: 28px;
+    border-radius: 18px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+}
+.visitor-field {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: 2px solid #E6D7C9;
+    margin-bottom: 12px;
+}
+#visitor-fileLabel {
+    display: block;
+    padding: 12px;
+    background: #E8DCCF;
+    border-radius: 12px;
+    cursor: pointer;
+    margin-bottom: 14px;
+}
+#visitor-status {
+    margin-top: 10px;
+    color: #A33;
+    font-size: .95rem;
+}
 </style>
 </head>
 
 <body>
+
 <h1>Notre deuxième maison</h1>
 <div class="subtitle">Souvenirs, images, vidéos… organisés par année.</div>
 
 <div id="years-menu"></div>
 
 <video id="mainVideo" class="main-video" controls>
-    <source id="videoSource" src="" type="video/mp4">
+    <source id="videoSource" src="" type="video/mp4" />
 </video>
 
 <div class="section-title">Souvenirs</div>
@@ -45,123 +179,203 @@ h1{margin:18px 0 4px!important;font-size:2.6rem;font-weight:700;text-shadow:0 0 
 
 <button id="visitor-floating-btn" onclick="openVisitorPopup()">✚</button>
 
-<div id="visitor-popup"><div id="visitor-box">
-    <h2>Partager un souvenir</h2>
-    <input id="visitor-name" class="visitor-field" placeholder="Votre prénom *">
-    <textarea id="visitor-message" class="visitor-field" rows="2" placeholder="Votre message *"></textarea>
-    <select id="visitor-year" class="visitor-field">
-        <option disabled selected>Choisissez l'année *</option>
-        <option>2020</option><option>2021</option><option>2022</option>
-        <option>2023</option><option>2024</option><option>2025</option>
-    </select>
+<div id="visitor-popup">
+    <div id="visitor-box">
+        <h2>Partager un souvenir</h2>
+        <input id="visitor-name" class="visitor-field" placeholder="Votre prénom *" />
+        <textarea id="visitor-message" class="visitor-field" rows="2" placeholder="Votre message *"></textarea>
 
-    <label id="visitor-fileLabel" for="visitor-files">📁 Choisir des photos / vidéos</label>
-    <input type="file" id="visitor-files" accept="image/*,video/*" multiple style="display:none;">
-    <div id="visitor-file-count">Aucun fichier sélectionné</div>
+        <select id="visitor-year" class="visitor-field">
+            <option disabled selected>Choisissez l'année *</option>
+            <option>2020</option><option>2021</option><option>2022</option>
+            <option>2023</option><option>2024</option><option>2025</option>
+        </select>
 
-    <button id="visitor-send-btn" onclick="sendVisitorPost()">Publier</button>
-    <button id="visitor-close-btn" onclick="closeVisitorPopup()">Annuler</button>
+        <label id="visitor-fileLabel" for="visitor-files">📁 Choisir des photos / vidéos</label>
+        <input type="file" id="visitor-files" accept="image/*,video/*" multiple style="display:none;" />
+        <div id="visitor-file-count">Aucun fichier sélectionné</div>
 
-    <div id="visitor-status"></div>
-</div></div>
+        <button id="visitor-send-btn" onclick="sendVisitorPost()">Publier</button>
+        <button onclick="closeVisitorPopup()">Annuler</button>
+
+        <div id="visitor-status"></div>
+    </div>
+</div>
 
 <script>
-const years=[2020,2021,2022,2023,2024,2025],menu=document.getElementById("years-menu");
+const years = [2020, 2021, 2022, 2023, 2024, 2025];
 
-years.forEach(y=>{let b=document.createElement("div");b.className="year-btn";b.innerText=y;b.onclick=()=>selectYear(y);menu.appendChild(b);});
+// ----------------------------------
+// MENU DES ANNÉES
+// ----------------------------------
+function initMenu(active) {
+    const menu = document.getElementById("years-menu");
+    menu.innerHTML = "";
 
-function highlightYear(y){document.querySelectorAll(".year-btn").forEach(btn=>{btn.classList.remove("active");if(btn.innerText==y)btn.classList.add("active");});}
-
-function loadMainVideo(y){document.getElementById("videoSource").src=`https://pierro-storage.b-cdn.net/videos/main/${y}.mp4`;document.getElementById("mainVideo").load();}
-
-async function loadPosts(year){
-    const g=document.getElementById("gallery");g.innerHTML="Chargement…";
-    const base=`https://pierro-storage.b-cdn.net/videos/user/${year}/`;
-
-    try{
-        const html=await fetch(base).then(r=>r.text());
-        const ids=[...html.matchAll(/href="([^"]+)\/"/g)].map(m=>m[1]).filter(x=>x!=="../");
-        if(!ids.length){g.innerHTML="Aucun souvenir pour cette année.";return;}
-        g.innerHTML="";
-
-        for(const id of ids){
-            const metaUrl=`${base}${id}/meta.json`;
-            const metaRes=await fetch(metaUrl);
-            if(!metaRes.ok)continue;
-
-            const post=await metaRes.json();
-            const card=document.createElement("div");card.className="post";
-
-            const h=document.createElement("div");
-            h.className="post-header";
-            h.innerHTML=`${post.name} — ${year}`;
-            card.appendChild(h);
-
-            const m=document.createElement("div");
-            m.className="post-message";
-            m.innerText=post.message;
-            card.appendChild(m);
-
-            const car=document.createElement("div");car.className="carousel";
-            const inner=document.createElement("div");inner.className="carousel-inner";
-
-            post.files.forEach(f=>{
-                const item=document.createElement("div");item.className="carousel-item";
-                const url=`${base}${id}/${f}`;
-                if(f.endsWith(".mp4")){
-                    const v=document.createElement("video");v.controls=true;v.src=url;item.appendChild(v);
-                }else{
-                    const img=document.createElement("img");img.src=url;item.appendChild(img);
-                }
-                inner.appendChild(item);
-            });
-
-            car.appendChild(inner);
-            card.appendChild(car);
-            g.appendChild(card);
-        }
-    }catch(e){g.innerHTML="Erreur de chargement.";}
+    years.forEach(y => {
+        const b = document.createElement("div");
+        b.className = "year-btn" + (y === active ? " active" : "");
+        b.innerText = y;
+        b.onclick = () => selectYear(y);
+        menu.appendChild(b);
+    });
 }
 
-function selectYear(y){highlightYear(y);loadMainVideo(y);loadPosts(y);}
+// ----------------------------------
+// VIDÉO PRINCIPALE
+// ----------------------------------
+function loadMainVideo(year) {
+    const url = `https://pierro-storage.b-cdn.net/videos/main/${year}.mp4`;
+    document.getElementById("videoSource").src = url;
+    document.getElementById("mainVideo").load();
+}
+
+// ----------------------------------
+// GALERIE (NOUVEAU VIA API /api/list)
+// ----------------------------------
+async function loadGallery(year) {
+    const gallery = document.getElementById("gallery");
+    gallery.innerHTML = "Chargement…";
+
+    const res = await fetch(`/api/list?year=${year}`);
+    const json = await res.json();
+
+    if (!json.success || json.posts.length === 0) {
+        gallery.innerHTML = "Aucun souvenir pour cette année.";
+        return;
+    }
+
+    gallery.innerHTML = "";
+
+    json.posts.forEach(post => {
+        if (!post.meta) return;
+
+        const card = document.createElement("div");
+        card.className = "post";
+
+        const h = document.createElement("div");
+        h.className = "post-header";
+        h.innerHTML = `${post.meta.name} — ${year}`;
+        card.appendChild(h);
+
+        const m = document.createElement("div");
+        m.className = "post-message";
+        m.innerText = post.meta.message;
+        card.appendChild(m);
+
+        const car = document.createElement("div");
+        car.className = "carousel";
+
+        const inner = document.createElement("div");
+        inner.className = "carousel-inner";
+
+        post.files.forEach(f => {
+            if (f === "meta.json") return;
+
+            const item = document.createElement("div");
+            item.className = "carousel-item";
+
+            const fileUrl = `https://pierro-storage.b-cdn.net/videos/user/${year}/${post.id}/${f}`;
+
+            if (f.endsWith(".mp4") || f.endsWith(".webm")) {
+                const v = document.createElement("video");
+                v.controls = true;
+                v.src = fileUrl;
+                item.appendChild(v);
+            } else {
+                const img = document.createElement("img");
+                img.src = fileUrl;
+                item.appendChild(img);
+            }
+
+            inner.appendChild(item);
+        });
+
+        car.appendChild(inner);
+        card.appendChild(car);
+        gallery.appendChild(card);
+    });
+}
+
+// ----------------------------------
+// SÉLECTION D’ANNÉE
+// ----------------------------------
+function selectYear(y) {
+    initMenu(y);
+    loadMainVideo(y);
+    loadGallery(y);
+}
+
 selectYear(2025);
 
-function openVisitorPopup(){document.getElementById("visitor-popup").style.display="flex";}
-function closeVisitorPopup(){document.getElementById("visitor-popup").style.display="none";document.getElementById("visitor-status").innerHTML="";}
+// ----------------------------------
+// POPUP VISITEURS
+// ----------------------------------
+function openVisitorPopup() {
+    document.getElementById("visitor-popup").style.display = "flex";
+}
+function closeVisitorPopup() {
+    document.getElementById("visitor-popup").style.display = "none";
+    document.getElementById("visitor-status").innerHTML = "";
+}
 
-document.getElementById("visitor-files").addEventListener("change",()=>{
-    const f=document.getElementById("visitor-files").files;
-    document.getElementById("visitor-file-count").innerText=f.length?`${f.length} fichier(s)`:"Aucun fichier sélectionné";
+document.getElementById("visitor-files").addEventListener("change", () => {
+    const f = document.getElementById("visitor-files").files;
+    document.getElementById("visitor-file-count").innerText =
+        f.length ? `${f.length} fichier(s)` : "Aucun fichier sélectionné";
 });
 
-async function sendVisitorPost(){
-    const name=document.getElementById("visitor-name").value.trim(),
-          message=document.getElementById("visitor-message").value.trim(),
-          year=document.getElementById("visitor-year").value.trim(),
-          files=document.getElementById("visitor-files").files,
-          status=document.getElementById("visitor-status");
+// ----------------------------------
+// ENVOI DES SOUVENIRS
+// ----------------------------------
+async function sendVisitorPost() {
+    const name = document.getElementById("visitor-name").value.trim();
+    const message = document.getElementById("visitor-message").value.trim();
+    const year = document.getElementById("visitor-year").value.trim();
+    const files = document.getElementById("visitor-files").files;
+    const status = document.getElementById("visitor-status");
 
-    if(!name||!message||!year)return status.innerHTML="Veuillez remplir tous les champs.";
-    if(!files.length)return status.innerHTML="Ajoutez au moins un fichier.";
+    if (!name || !message || !year) {
+        status.innerHTML = "Veuillez remplir tous les champs.";
+        return;
+    }
+    if (!files.length) {
+        status.innerHTML = "Ajoutez au moins un fichier.";
+        return;
+    }
 
-    status.innerHTML="Envoi…";
+    status.innerHTML = "Envoi…";
 
-    const form=new FormData();
-    form.append("name",name);
-    form.append("message",message);
-    form.append("year",year);
-    for(const f of files)form.append("files",f);
+    const form = new FormData();
+    form.append("name", name);
+    form.append("message", message);
+    form.append("year", year);
 
-    try{
-        const r=await fetch("/api/upload-visitors",{method:"POST",body:form});
-        const j=await r.json();
-        if(!j.success)return status.innerHTML="Erreur : "+j.error;
+    for (let file of files) form.append("files", file);
 
-        status.innerHTML="✔ Souvenir ajouté !";
-        setTimeout(()=>closeVisitorPopup(),1200);
+    try {
+        const res = await fetch("/api/upload-visitors", {
+            method: "POST",
+            body: form
+        });
+
+        const json = await res.json();
+
+        if (!json.success) {
+            status.innerHTML = "Erreur : " + json.error;
+            return;
+        }
+
+        status.innerHTML = "✔ Souvenir ajouté !";
+        setTimeout(() => closeVisitorPopup(), 1200);
+
         selectYear(year);
-    }catch{status.innerHTML="Erreur lors de l’envoi.";}
+
+    } catch {
+        status.innerHTML = "Erreur lors de l’envoi.";
+    }
 }
 </script>
 
-</body></html>
+</body>
+</html>
